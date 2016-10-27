@@ -25,6 +25,10 @@ namespace GiaimeRedBlackTree
                     case "print":
                         myBST.Print();
                         break;
+                    case "remove":
+                        Console.WriteLine("Enter data to be added to tree");
+                        myBST.Remove(new BSTNode<int>(int.Parse(Console.ReadLine())));
+                        break;
 
                 }
             }

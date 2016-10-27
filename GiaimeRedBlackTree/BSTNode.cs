@@ -11,6 +11,7 @@ namespace GiaimeRedBlackTree
         private TData data;
         private BSTNode<TData> leftChild;
         private BSTNode<TData> rightChild;
+        private BSTNode<TData> parent;
 
         /// <summary>
         /// Constructs a BSTNode with Data of a given type. Children default to null.
@@ -43,6 +44,11 @@ namespace GiaimeRedBlackTree
         {
             get { return data; }
             set { data = value; }
+        }
+
+        public BSTNode<TData> Parent {
+            get { return parent; }
+            set { parent = value; }
         }
 
         override public String ToString() {
