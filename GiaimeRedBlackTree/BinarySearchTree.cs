@@ -115,84 +115,187 @@ namespace GiaimeRedBlackTree
             else
             {
                 /*This is where it gets tricky. We've found the node, so now we must properly remove it.
-                 * There are exactly four cases we must handle: no children, only a left child, only a right child, or both a left and right child.
+                 * There are exactly five cases we must handle: root, no children, only a right child, only a left child, or two children.
                  * We will cover how to handle each of those as we reach them.
-                 */               
-
-                //First, we compare the node to its parent. This way, we know if the nodeToRemove is a left or right child.
-                // 1 = left child, -1 = right child
-                int comp = currNode.Parent.Data.CompareTo(currNode.Data);
-
-                /*Case 1: No children
-                * For the sake of code simplicity, this section is going to be slightly inefficient.
-                * What do we do when we want to remove a node with no children?
-                * We simply remove the parent's connection to it.
-                * This will send the node to garbage collection.
-                * From the point-of-view of the tree, however, the node will no longer exist, having been replaced by null.
-               */
-                if (currNode.LeftChild == null && currNode.RightChild == null)
-                {
-                    if (comp == 1)
-                    {
-                        currNode.Parent.LeftChild = null;
-                        currNode.Parent = null;
-                    }
-                    else {
-
-                        currNode.Parent.RightChild = null;
-                        currNode.Parent = null;
-                    }
-                    return true;
-                }
-
-                /*Case 2: Only a left child
-                 * How do we remove a Node with only a left child?
-                 * 
-                 * If that node itself is a leftChild:
-                 * Here's a Visualization: 
-                 *     A        A
-                 *    /        /
-                 *   B  --->  C
-                 *  /
-                 * C
-                 * Where B is the NodeToRemove.
-                 * 1st, We set A's leftChild to C
-                 * 2nd, We set C's Parent to A
-                 * Finally, we clean up B by removing all its references.
-                 * 
-                 * If that node itself is a rightChild
-                 *                  * If that node itself is a leftChild:
-                 * Here's a Visualization: 
-                 * A          A
-                 *  \          \
-                 *   B  --->    C
-                 *  /
-                 * C
-                 * Where B is the NodeToRemove.
-                 * 1st, We set A's rightChild to C
-                 * 2nd, We set C's Parent to A
-                 * Finally, we clean up B by removing all its references.
-                 * 
-                 * Notice that all steps other than the 1st are the same. 
-                 * As a result our conditional only changes which child of the Parent we change.
                  */
-                if (currNode.LeftChild != null && currNode.RightChild == null)
+
+                //If the root is the node we're removing, there is no parent, so this case is special.
+                if (currNode == root)
                 {
-                    if (comp == 1)
+                    //If the root has no children, simply delete the root.
+                    if (currNode.LeftChild == null && currNode.RightChild == null)
                     {
-                        currNode.Parent.LeftChild = currNode.LeftChild;
+                        root = null;
+                        return true;
                     }
-                    else
+                    //If the root has only a left child, set that left child to the root.
+                    //Then, clean up the previous root by removing all of its references
+                    else if (currNode.LeftChild != null && currNode.RightChild == null)
                     {
-                        currNode.Parent.RightChild = currNode.LeftChild;
+                        root = currNode.LeftChild;
+                        currNode.LeftChild = null;
+                        return true;
+                    }
+                    //If the root has only a right child, set that right child to the root
+                    //then, clean up the previous root by removing all of its referenecs
+                    else if (currNode.LeftChild == null && currNode.RightChild != null)
+                    {
+                        root = currNode.RightChild;
+                        currNode.RightChild = null;
+                        return true;
+                    }
+                    /*Finally, we hit the case of two children. In this case, there are a few things we must do.
+                     *           A
+                     *         /   \
+                     *        B     C
+                     *       / \   / \
+                     *      D   E F   G
+                     *      
+                     * Alright, so  A is our root. If we want to remove A, we definitely need to set C as the new root.
+                     * However, doing that isn't so easy. C has children that need to be dealt with.
+                     * We know that all of C's children are greater than A, so what does that tell us?
+                     * Well, we know for sure that C, F, and G are greater than B, D, and E.
+                     * Since this is true, B can be placed as a left child of F, since B, as well as B's children, are less than F.
+                     * 
+                     * So, what is our process?
+                     * 
+                     * Set C to the new root.
+                     * Set B as the lowest child in C's left tree. (vvv SEE IMPORTANT NOTE vvv)
+                     * Clean up A by removing all of its references.
+                     * Set C's parent to null, since C is now the root.
+                     * This results in the following tree:
+                     * 
+                     *          C
+                     *        /   \
+                     *       F     G
+                     *      /
+                     *     B
+                     *    / \
+                     *   D   E 
+                     *   
+                     *   IMPORTANT NOTE:
+                     *   If F has any left children, we must go all the way down until there are no more left children.
+                     *   In other words, B is being inserted at the bottom left of C's left tree, because B is less than all of those values.
+                     *   This may seem extremely complicated, but in reality, all we're doing is readding B to the tree, starting from C.
+                     *   B can maintain all of its children (as these will not change). 
+                     *   So, we just add B to the tree as though it were new, and all of its descendents will come with it.
+                    */
+                    else {
+                        root = currNode.RightChild;
+                        Add(currNode.LeftChild);
+                        currNode.LeftChild = null;
+                        currNode.RightChild = null;
+                        root.Parent = null;
+                        return true;
+                    }
+                }
+                else
+                {
+                    //First, we compare the node to its parent. This way, we know if the nodeToRemove is a left or right child.
+                    // 1 = left child, -1 = right child
+                    int comp = currNode.Parent.Data.CompareTo(currNode.Data);
+
+                    /*Case 1: No children
+                    * For the sake of code simplicity, this section is going to be slightly inefficient.
+                    * What do we do when we want to remove a node with no children?
+                    * We simply remove the parent's connection to it.
+                    * This will send the node to garbage collection.
+                    * From the point-of-view of the tree, however, the node will no longer exist, having been replaced by null.
+                   */
+                    if (currNode.LeftChild == null && currNode.RightChild == null)
+                    {
+                        if (comp == 1)
+                        {
+                            currNode.Parent.LeftChild = null;
+                            currNode.Parent = null;
+                        }
+                        else
+                        {
+
+                            currNode.Parent.RightChild = null;
+                            currNode.Parent = null;
+                        }
+                        return true;
                     }
 
-                    //This happens regardless of what type of child our nodeToRemove is.
-                    currNode.LeftChild.Parent = currNode.Parent;
-                    currNode.Parent = null;
-                    currNode.LeftChild = null;
+                    /*Case 2: One child
+                     * How do we remove a Node with only one child?
+                     * 
+                     * If that node itself is a leftChild:
+                     * Here's a Visualization: 
+                     *     A        A       A       A
+                     *    /        /       /       /
+                     *   B  --->  C   OR  B  ---> C
+                     *  /                  \
+                     * C                    C
+                     * Where B is the NodeToRemove.
+                     * 1st, We set A's leftChild to C
+                     * 2nd, We set C's Parent to A
+                     * Finally, we clean up B by removing all its references.
+                     * 
+                     * If that node itself is a rightChild:
+                     * Here's a Visualization: 
+                     * A        A           A       A
+                     *  \        \           \       \
+                     *   B  --->  C    OR     B --->  C  
+                     *  /                      \
+                     * C                        C
+                     * Where B is the NodeToRemove.
+                     * 1st, We set A's rightChild to C
+                     * 2nd, We set C's Parent to A
+                     * Finally, we clean up B by removing all its references.
+                     * 
+                     * Notice that all steps other than the 1st are the same. 
+                     * As a result our conditional only changes which child of the Parent we change.
+                     * 
+                     * The only difference between having a left or right child is which reference you change.
+                     * Given a left child, we want to set the parent's child to the left child.
+                     * Given a right child, we want to set the parent's child to the right child.
+                     */
 
-                    return true;
+                    //Checks that the Node has only a left child
+                    else if (currNode.LeftChild != null && currNode.RightChild == null)
+                    {
+                        if (comp == 1)
+                        {
+                            currNode.Parent.LeftChild = currNode.LeftChild;
+                        }
+                        else
+                        {
+                            currNode.Parent.RightChild = currNode.LeftChild;
+                        }
+
+                        //This happens regardless of what type of child our nodeToRemove is.
+                        currNode.LeftChild.Parent = currNode.Parent;
+                        currNode.Parent = null;
+                        currNode.LeftChild = null;
+
+                        //return true, since we successfully added a node.
+                        return true;
+                    }
+
+                    //Checks that the Node has only a right child
+                    else if (currNode.LeftChild == null && currNode.RightChild != null)
+                    {
+                        if (comp == 1)
+                        {
+                            currNode.Parent.LeftChild = currNode.RightChild;
+                        }
+                        else
+                        {
+                            currNode.Parent.RightChild = currNode.RightChild;
+                        }
+
+                        //This happens regardless of what type of child our nodeToRemove is.
+                        currNode.RightChild.Parent = currNode.Parent;
+                        currNode.Parent = null;
+                        currNode.LeftChild = null;
+
+                        //return true, since we successfully added a node.
+                        return true;
+
+                    }
+
                 }
 
                 Console.WriteLine("I'm equal! But I have not been removed.");
