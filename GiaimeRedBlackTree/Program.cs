@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GiaimeRedBlackTree
+namespace BinarySearchTree
 {
     class Program
     {
@@ -26,7 +26,7 @@ namespace GiaimeRedBlackTree
                         myBST.Print();
                         break;
                     case "remove":
-                        Console.WriteLine("Enter data to be added to tree");
+                        Console.WriteLine("Enter data to be removed from tree");
                         myBST.Remove(new BSTNode<int>(int.Parse(Console.ReadLine())));
                         break;
 

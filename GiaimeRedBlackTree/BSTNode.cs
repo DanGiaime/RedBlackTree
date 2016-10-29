@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GiaimeRedBlackTree
+namespace BinarySearchTree
 {
     class BSTNode<TData> where TData: IComparable
     {

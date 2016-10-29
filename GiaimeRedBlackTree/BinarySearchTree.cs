@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GiaimeRedBlackTree
+namespace BinarySearchTree
 {
     class BinarySearchTree<TData> where TData : IComparable
     {
@@ -204,6 +204,7 @@ namespace GiaimeRedBlackTree
                    */
                     if (currNode.LeftChild == null && currNode.RightChild == null)
                     {
+                        Console.WriteLine("No kids!");
                         if (comp == 1)
                         {
                             currNode.Parent.LeftChild = null;
@@ -256,6 +257,7 @@ namespace GiaimeRedBlackTree
                     //Checks that the Node has only a left child
                     else if (currNode.LeftChild != null && currNode.RightChild == null)
                     {
+                        Console.WriteLine("Only a left child!");
                         if (comp == 1)
                         {
                             currNode.Parent.LeftChild = currNode.LeftChild;
@@ -277,6 +279,7 @@ namespace GiaimeRedBlackTree
                     //Checks that the Node has only a right child
                     else if (currNode.LeftChild == null && currNode.RightChild != null)
                     {
+                        Console.WriteLine("Only a right child!");
                         if (comp == 1)
                         {
                             currNode.Parent.LeftChild = currNode.RightChild;
@@ -296,9 +299,32 @@ namespace GiaimeRedBlackTree
 
                     }
 
+                    //Final case: Two children. This scenario has been covered in the root scenario
+                    //The only difference is that we must account for the parent of the nodeToRemove
+                    //Instead of setting the node replacing our nodeToRemove equal to root,
+                    //we make it the correct child of its parent
+                    else {
+                        Console.WriteLine("Two kids!");
+                        if (comp == 1)
+                        {
+                            //Was I removing a right child? Then my replacement will become a right child
+                            currNode.Parent.LeftChild = currNode.RightChild;
+                        }
+                        else {
+                            //Was I replacing a left child? Then my replacement will become a left child
+                            currNode.Parent.RightChild = currNode.RightChild;
+                        }
+                        Add(currNode.LeftChild);                                //Add the left child, as we did in the root example
+                        currNode.RightChild.Parent = currNode.Parent;           //Set our replacement's parent to the currNode's parent
+                        currNode.LeftChild = null;                              //Clean up currNode
+                        currNode.RightChild = null;
+                        currNode.Parent = null;
+                        return true;
+                    }
+
                 }
 
-                Console.WriteLine("I'm equal! But I have not been removed.");
+                Console.WriteLine("I'm equal! But I have not been removed.");   //This should never happen
                 return false;
             }
 

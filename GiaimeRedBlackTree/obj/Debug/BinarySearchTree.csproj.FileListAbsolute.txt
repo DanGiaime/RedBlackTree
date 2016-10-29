@@ -1,0 +1,6 @@
+F:\College\myProjects\GiaimeRedBlackTree\GiaimeRedBlackTree\bin\Debug\GiaimeRedBlackTree.exe.config
+F:\College\myProjects\GiaimeRedBlackTree\GiaimeRedBlackTree\bin\Debug\GiaimeRedBlackTree.exe
+F:\College\myProjects\GiaimeRedBlackTree\GiaimeRedBlackTree\bin\Debug\GiaimeRedBlackTree.pdb
+F:\College\myProjects\GiaimeRedBlackTree\GiaimeRedBlackTree\obj\Debug\BinarySearchTree.csprojResolveAssemblyReference.cache
+F:\College\myProjects\GiaimeRedBlackTree\GiaimeRedBlackTree\obj\Debug\GiaimeRedBlackTree.exe
+F:\College\myProjects\GiaimeRedBlackTree\GiaimeRedBlackTree\obj\Debug\GiaimeRedBlackTree.pdb
