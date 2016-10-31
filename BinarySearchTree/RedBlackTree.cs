@@ -104,10 +104,11 @@ namespace RedBlackTree
                     if (currNode.RightChild.Color == NodeColor.RED)
                     {
                         Right(currNode);
+                        Rebalance();
                     }
                     else if (currNode.LeftChild.Color == NodeColor.RED)
                     {
-                        //Left(currNode);
+                        Left(currNode);
                     }
                 }
             }
@@ -139,17 +140,22 @@ namespace RedBlackTree
                         if (promotion)
                         {
                             //My brother and child are red! A promotion is necessary!
-                            //Promotion(currNode);
+                            Promotion(currNode);
                         }
                         else if (comp == -1)
                         {
                             //I'm a right child! My left child is red! rightleft() is needed!
-                            //RightLeft(currNode);
+                            currNode = currNode.LeftChild;
+                            Left(currNode);
+                            Print();
+                            Right(currNode);
+                            Print();
                         }
                         else
                         {
                             //I'm a left child! My left child is red! left() is needed!
                             Left(currNode);
+                            Print();
                         }
                     }
 
@@ -160,18 +166,23 @@ namespace RedBlackTree
                         if (promotion)
                         {
                             //My brother and child are red! A promotion is necessary!
-                            //Promotion(currNode);
+                            Promotion(currNode);
                         }
                         else if (comp == -1)
                         {
                             //I'm a right child! My right child is red! right() is needed!
                             Console.WriteLine("Right rotation!");
                             Right(currNode);
+                            Print();
                         }
                         else
                         {
                             //I'm a left child! My right child is red! leftright() is needed!
-                            //LeftRight(currNode);
+                            currNode = currNode.RightChild;
+                            Right(currNode);
+                            Print();
+                            Left(currNode);
+                            Print();
                         }
                     }
 
@@ -233,11 +244,11 @@ namespace RedBlackTree
          */
         private void Right(RBTNode<TData> parentOfAddition)
         {
-            int comp = parentOfAddition.Parent.Data.CompareTo(parentOfAddition.Data);
 
             //Remember, parentOfAddition is node C in this scenario
             if (parentOfAddition.Parent == root)
             {
+                Console.WriteLine("Beginning Right shift of " + parentOfAddition.Data);
                 parentOfAddition.Parent.RightChild = parentOfAddition.LeftChild;        //set a's right child to b
                 if (parentOfAddition.LeftChild != null)
                 {
@@ -250,8 +261,12 @@ namespace RedBlackTree
             }
             else
             {
+                Console.WriteLine("Beginning Right shift of " + parentOfAddition.Data);
                 parentOfAddition.Parent.RightChild = parentOfAddition.LeftChild;        //set a's right child to b
-                parentOfAddition.LeftChild.Parent = parentOfAddition.Parent;            //set b's parent to a
+                if (parentOfAddition.LeftChild != null)
+                {
+                    parentOfAddition.LeftChild.Parent = parentOfAddition.Parent;            //set b's parent to a
+                }
                 parentOfAddition.LeftChild = parentOfAddition.Parent;                   //set C's left child to a
                 parentOfAddition.Parent = parentOfAddition.Parent.Parent;               //set C's parent to a's parent
                 parentOfAddition.LeftChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
@@ -273,6 +288,7 @@ namespace RedBlackTree
             //Remember, parentOfAddition is node C in this scenario
             if (parentOfAddition.Parent == root)
             {
+                Console.WriteLine("Beginning Left shift of " + parentOfAddition.Data);
                 parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set a's right child to b
                 if (parentOfAddition.RightChild != null)
                 {
@@ -285,6 +301,7 @@ namespace RedBlackTree
             }
             else
             {
+                Console.WriteLine("Beginning Left shift of " + parentOfAddition.Data);
                 parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set a's right child to b
                 if (parentOfAddition.RightChild != null)
                 {
@@ -315,6 +332,24 @@ namespace RedBlackTree
 
         }
 
+        public void Promotion(RBTNode<TData> parentOfAddition)
+        {
+            int comp = parentOfAddition.Parent.Data.CompareTo(parentOfAddition.Data);
+
+            Console.WriteLine("Promotion from " + parentOfAddition.Data);
+
+            parentOfAddition.Parent.Color = NodeColor.RED;
+            parentOfAddition.Color = NodeColor.BLACK;
+            if (comp == -1)
+            {
+                parentOfAddition.Parent.LeftChild.Color = NodeColor.BLACK;
+            }
+            else
+            {
+                parentOfAddition.Parent.RightChild.Color = NodeColor.BLACK;
+            }
+
+        }
 
         public bool Remove(RBTNode<TData> nodeToRemove, RBTNode<TData> currNode = null)
         {
