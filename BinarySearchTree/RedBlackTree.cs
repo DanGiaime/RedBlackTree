@@ -4,27 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BinarySearchTree
+namespace RedBlackTree
 {
-    class BinarySearchTree<TData> where TData : IComparable
+    class RedBlackTree<TData> where TData : IComparable
     {
-        private BSTNode<TData> root;
 
-        /// <summary>
-        /// Creates a BinarySearchTree. Takes a root node with the desired data type.
-        /// BSTs can only have 1 data type because all nodes must be Comparable to each other
-        /// </summary>
-        /// <param name="root">The root node of the BST.</param>
-        public BinarySearchTree(BSTNode<TData> root = null)
+        private RBTNode<TData> root;
+
+        public RedBlackTree(RBTNode<TData> root = null)
         {
             this.root = root;
         }
 
-        public BSTNode<TData> Root
+        public RBTNode<TData> Root
         {
             get { return root; }
             set { root = value; }
         }
+
 
         /// <summary>
         /// Adds a node to the tree.
@@ -32,10 +29,11 @@ namespace BinarySearchTree
         /// <param name="nodeToAdd">Node to be added to the tree.</param>
         /// <param name="currNode">Node currently being examined. This defaults to the root.</param>
         /// <returns>True if Node was added, false otherwise.</returns>
-        public bool Add(BSTNode<TData> nodeToAdd, BSTNode<TData> currNode = null)
+        public bool Add(RBTNode<TData> nodeToAdd, RBTNode<TData> currNode = null)
         {
             if (root == null)
             {
+                nodeToAdd.Color = NodeColor.BLACK;
                 root = nodeToAdd;
                 return true;
             }
@@ -51,6 +49,8 @@ namespace BinarySearchTree
                     {
                         currNode.LeftChild = nodeToAdd;
                         nodeToAdd.Parent = currNode;
+                        Console.WriteLine(nodeToAdd.Data + " is now the left child of " + currNode.Data);
+                        Rebalance(nodeToAdd.Parent);
                         return true;
                     }
                     else
@@ -64,6 +64,8 @@ namespace BinarySearchTree
                     {
                         currNode.RightChild = nodeToAdd;
                         nodeToAdd.Parent = currNode;
+                        Console.WriteLine(nodeToAdd.Data + " is now the right child of " + currNode.Data);
+                        Rebalance(nodeToAdd.Parent);
                         return true;
                     }
                     else
@@ -73,13 +75,248 @@ namespace BinarySearchTree
                 }
                 else
                 {
+                    Rebalance(nodeToAdd.Parent);
                     return false;
                 }
             }
         }
 
-        //TODO Remove
-        public bool Remove(BSTNode<TData> nodeToRemove, BSTNode<TData> currNode = null)
+        /// <summary>
+        /// Should be run post addition.
+        /// Rebalances the tree from the parent of the added node.
+        /// </summary>
+        /// <param name="currNode">The parent of the node that was added.</param>
+        private void Rebalance(RBTNode<TData> currNode)
+        {
+            Console.WriteLine("Rebalancing!");
+
+            //Keeps the root black
+            //This should only happen if we get to the top or in early cases
+            if (root.Color == NodeColor.RED && currNode != root)
+            {
+                root.Color = NodeColor.BLACK;
+            }
+
+            else if (currNode == root)
+            {
+                if (currNode.Color == NodeColor.RED)
+                {
+                    if (currNode.RightChild.Color == NodeColor.RED)
+                    {
+                        Right(currNode);
+                    }
+                    else if (currNode.LeftChild.Color == NodeColor.RED)
+                    {
+                        //Left(currNode);
+                    }
+                }
+            }
+            else
+            {
+
+                //-1 if right child, if left child
+                int comp = currNode.Parent.Data.CompareTo(currNode.Data);
+
+                //If the uncle of the added node is red, a promotion is possible.
+                //This boolean tells us whether or not the uncle of the added node is red, telling us if a promotion is possible.
+                bool promotion;
+                if (currNode.Parent.RightChild != null && currNode.Parent.LeftChild != null)
+                {
+                    promotion = comp == 1 ? currNode.Parent.RightChild.Color == NodeColor.RED : currNode.Parent.LeftChild.Color == NodeColor.RED;
+                }
+                else
+                {
+                    promotion = false;
+                }
+                //If the parent of the added node isn't red, we don't need to do anything
+                if (currNode.Color == NodeColor.RED)
+                {
+                    Console.WriteLine("I, " + currNode.Data + " am red!");
+                    //If my leftChild is red, I need to fix that!
+                    if (currNode.LeftChild != null && currNode.LeftChild.Color == NodeColor.RED)
+                    {
+                        Console.WriteLine("I, " + currNode.Data + ", see that my left child is red!");
+                        if (promotion)
+                        {
+                            //My brother and child are red! A promotion is necessary!
+                            //Promotion(currNode);
+                        }
+                        else if (comp == -1)
+                        {
+                            //I'm a right child! My left child is red! rightleft() is needed!
+                            //RightLeft(currNode);
+                        }
+                        else
+                        {
+                            //I'm a left child! My left child is red! left() is needed!
+                            Left(currNode);
+                        }
+                    }
+
+                    //If my rightChild is red, I need to fix that!
+                    else if (currNode.RightChild != null && currNode.RightChild.Color == NodeColor.RED)
+                    {
+                        Console.WriteLine("I, " + currNode.Data + ", see that my right child is red!");
+                        if (promotion)
+                        {
+                            //My brother and child are red! A promotion is necessary!
+                            //Promotion(currNode);
+                        }
+                        else if (comp == -1)
+                        {
+                            //I'm a right child! My right child is red! right() is needed!
+                            Console.WriteLine("Right rotation!");
+                            Right(currNode);
+                        }
+                        else
+                        {
+                            //I'm a left child! My right child is red! leftright() is needed!
+                            //LeftRight(currNode);
+                        }
+                    }
+
+                    //If I'm not red, nothing needs to change! We're still balanced!
+                }
+            }
+        }
+
+        /*
+         * A right rotation occurs when we have two red nodes that are right children.
+         * In this example, capital letters are RED nodes, lowercase are black nodes
+         *         a                    c
+         *          \                  / \
+         *           C      -->       A   D
+         *          / \                \
+         *         b   D                b
+         * Where D is the most recently added node
+         * 
+         * The key to understanding rotations is understanding that a rotation consists of exactly three things:
+         * 1) Two nodes shift position
+         * 2) Those same two nodes swap colors
+         * 3) The child of one node becomes the child of the other
+         * 
+         * So, in this scenario, a and C change positions
+         * In the right rotation, the grandparent of the added node becomes the left child of the parent of the added node
+         * So, a becomes C's left child.
+         * Since there two nodes have shifted positions, they will swap their colors.
+         * Since we previously had a and C, we now have A and c
+         * 
+         * ***IMPORTANT NOTE ABOUT COLOR SWAP:***
+         * When two nodes switch colors, they will NOT ALWAYS BE DIFFERENT
+         * We will see this later when we get to the "rightleft" and "leftright" scenarios
+         * As such, if two nodes are red and change positions, the two nodes will "swap colors" from red to red.
+         * 
+         * Since c now has A as it's left child, c's previous left child, b, must be appended to A
+         * Since b must be greater than A, we append b as A's right child
+         * 
+         * ***IMPORTANT NOTE ABOUT CHILD SHIFT:***
+         * Only one child of each moved node should change.
+         * In this scenario, A would maintain any previous left children, and c would maintain any previous right children
+         * 
+         * So, now into the details, how do we, step by step, preform this operation?
+         * 
+         * Our method takes in the node "parentofAddition", which is the parent of the node that has been added
+         * In our diagram, this is node C.
+         * Both nodes C and a must change positions, so we must simultaneously have C take a's place, 
+         * while also not losing track of C's left child
+         * 
+         * So, for this movement, we must:
+         * Set a's right child to b
+         * Set b's parent to a
+         * Set C's left child to a
+         * Set C's parent to a's parent
+         * Set a's parent to C
+         * Swap the colors of a and C
+         * 
+         * This order may seem a bit odd, but it ensures we don't accidentally lose any references mid swap
+         * 
+         */
+        private void Right(RBTNode<TData> parentOfAddition)
+        {
+            int comp = parentOfAddition.Parent.Data.CompareTo(parentOfAddition.Data);
+
+            //Remember, parentOfAddition is node C in this scenario
+            if (parentOfAddition.Parent == root)
+            {
+                parentOfAddition.Parent.RightChild = parentOfAddition.LeftChild;        //set a's right child to b
+                if (parentOfAddition.LeftChild != null)
+                {
+                    parentOfAddition.LeftChild.Parent = parentOfAddition.Parent;            //set b's parent to a
+                }
+                parentOfAddition.LeftChild = parentOfAddition.Parent;                   //set C's left child to a
+                parentOfAddition.Parent = null;
+                root = parentOfAddition;
+                parentOfAddition.LeftChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
+            }
+            else
+            {
+                parentOfAddition.Parent.RightChild = parentOfAddition.LeftChild;        //set a's right child to b
+                parentOfAddition.LeftChild.Parent = parentOfAddition.Parent;            //set b's parent to a
+                parentOfAddition.LeftChild = parentOfAddition.Parent;                   //set C's left child to a
+                parentOfAddition.Parent = parentOfAddition.Parent.Parent;               //set C's parent to a's parent
+                parentOfAddition.LeftChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
+            }
+            //Checks that the nodes are of different colors. If they are, changes the color of each.
+            //This works beacuse we only have two colors, so if they do not match, we can just convert each to the opposite color and be correct.
+            //Otherwise, does nothing
+            if (parentOfAddition.Color != parentOfAddition.LeftChild.Color)
+            {
+                parentOfAddition.Color = (NodeColor)(((int)parentOfAddition.Color + 1) % 2);                    //Reverses the color of C
+                parentOfAddition.LeftChild.Color = (NodeColor)(((int)parentOfAddition.Color + 1) % 2);          //Reverses the color of a
+            }
+
+        }
+
+        private void Left(RBTNode<TData> parentOfAddition)
+        {
+
+            //Remember, parentOfAddition is node C in this scenario
+            if (parentOfAddition.Parent == root)
+            {
+                parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set a's right child to b
+                if (parentOfAddition.RightChild != null)
+                {
+                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;            //set b's parent to a
+                }
+                parentOfAddition.RightChild = parentOfAddition.Parent;                   //set C's left child to a
+                parentOfAddition.Parent = null;
+                root = parentOfAddition;
+                parentOfAddition.RightChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
+            }
+            else
+            {
+                parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set a's right child to b
+                if (parentOfAddition.RightChild != null)
+                {
+                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;            //set b's parent to a
+                }
+                parentOfAddition.RightChild = parentOfAddition.Parent;                   //set C's left child to a
+                parentOfAddition.Parent = parentOfAddition.Parent.Parent;               //set C's parent to a's parent
+                parentOfAddition.RightChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
+
+                //-1 if right child, if left child
+                if (parentOfAddition.Parent.Data.CompareTo(parentOfAddition.Data) == -1)
+                {
+                    parentOfAddition.Parent.RightChild = parentOfAddition;
+                }
+                else
+                {
+                    parentOfAddition.Parent.LeftChild = parentOfAddition;
+                }
+            }
+            //Checks that the nodes are of different colors. If they are, changes the color of each.
+            //This works beacuse we only have two colors, so if they do not match, we can just convert each to the opposite color and be correct.
+            //Otherwise, does nothing
+            if (parentOfAddition.Color != parentOfAddition.RightChild.Color)
+            {
+                parentOfAddition.Color = (NodeColor)(((int)parentOfAddition.Color + 1) % 2);                    //Reverses the color of C
+                parentOfAddition.RightChild.Color = (NodeColor)(((int)parentOfAddition.Color + 1) % 2);          //Reverses the color of a
+            }
+
+        }
+
+
+        public bool Remove(RBTNode<TData> nodeToRemove, RBTNode<TData> currNode = null)
         {
 
             if (currNode == null)
@@ -180,7 +417,8 @@ namespace BinarySearchTree
                      *   B can maintain all of its children (as these will not change). 
                      *   So, we just add B to the tree as though it were new, and all of its descendents will come with it.
                     */
-                    else {
+                    else
+                    {
                         root = currNode.RightChild;
                         Add(currNode.LeftChild);
                         currNode.LeftChild = null;
@@ -303,14 +541,16 @@ namespace BinarySearchTree
                     //The only difference is that we must account for the parent of the nodeToRemove
                     //Instead of setting the node replacing our nodeToRemove equal to root,
                     //we make it the correct child of its parent
-                    else {
+                    else
+                    {
                         Console.WriteLine("Two kids!");
                         if (comp == 1)
                         {
                             //Was I removing a right child? Then my replacement will become a right child
                             currNode.Parent.LeftChild = currNode.RightChild;
                         }
-                        else {
+                        else
+                        {
                             //Was I replacing a left child? Then my replacement will become a left child
                             currNode.Parent.RightChild = currNode.RightChild;
                         }
@@ -334,8 +574,5 @@ namespace BinarySearchTree
         {
             Console.WriteLine(root);
         }
-
-
-
     }
 }
