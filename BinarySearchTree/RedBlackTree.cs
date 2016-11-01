@@ -92,6 +92,7 @@ namespace RedBlackTree
 
             //Keeps the root black
             //This should only happen if we get to the top or in early cases
+            //Since the nodes above the root are "null", we can simply have this null case to make the root black at the end
             if (root.Color == NodeColor.RED && currNode != root)
             {
                 root.Color = NodeColor.BLACK;
@@ -104,11 +105,12 @@ namespace RedBlackTree
                     if (currNode.RightChild.Color == NodeColor.RED)
                     {
                         Right(currNode);
-                        Rebalance();
+                        Rebalance(null);
                     }
                     else if (currNode.LeftChild.Color == NodeColor.RED)
                     {
                         Left(currNode);
+                        Rebalance(null);
                     }
                 }
             }
@@ -141,6 +143,8 @@ namespace RedBlackTree
                         {
                             //My brother and child are red! A promotion is necessary!
                             Promotion(currNode);
+
+                            Rebalance(currNode.Parent.Parent);
                         }
                         else if (comp == -1)
                         {
@@ -282,6 +286,25 @@ namespace RedBlackTree
 
         }
 
+        /*
+         * The Left rotation scenario is simply the inverse of the Right rotation
+         * As such, not much explanation beyond the previous is necessary, only that a few rights and lefts will swap.
+         * However, for the sake of absolute clarity, let's go through it anyway.
+         * 
+         * In this example, capital letters are RED nodes, lowercase are black nodes
+         *       d                b
+         *      /                / \
+         *     B      -->       A   D
+         *    / \                  /
+         *   A   c                c
+         * 
+         * Since we've already discussed the importance of color swaps, and what a rotation consists of,
+         * We're just going to cover the exact manner in which we will perform this shift
+         * 
+         * Set d's left child to c
+         * TODO: continue this
+         * 
+         */
         private void Left(RBTNode<TData> parentOfAddition)
         {
 
@@ -292,12 +315,12 @@ namespace RedBlackTree
                 parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set a's right child to b
                 if (parentOfAddition.RightChild != null)
                 {
-                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;            //set b's parent to a
+                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;       //set b's parent to a
                 }
-                parentOfAddition.RightChild = parentOfAddition.Parent;                   //set C's left child to a
-                parentOfAddition.Parent = null;
+                parentOfAddition.RightChild = parentOfAddition.Parent;                  //set C's left child to a
+                parentOfAddition.Parent = null;                                         //set the new root's parent to null
                 root = parentOfAddition;
-                parentOfAddition.RightChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
+                parentOfAddition.RightChild.Parent = parentOfAddition;                  //set a's parent to C **Note: at this point, a is the leftChild of our node**
             }
             else
             {
@@ -305,10 +328,10 @@ namespace RedBlackTree
                 parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set a's right child to b
                 if (parentOfAddition.RightChild != null)
                 {
-                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;            //set b's parent to a
+                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;       //set b's parent to a
                 }
                 parentOfAddition.RightChild = parentOfAddition.Parent;                   //set C's left child to a
-                parentOfAddition.Parent = parentOfAddition.Parent.Parent;               //set C's parent to a's parent
+                parentOfAddition.Parent = parentOfAddition.Parent.Parent;                //set C's parent to a's parent
                 parentOfAddition.RightChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
 
                 //-1 if right child, if left child
