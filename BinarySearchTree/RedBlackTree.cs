@@ -97,7 +97,6 @@ namespace RedBlackTree
             {
                 root.Color = NodeColor.BLACK;
             }
-
             else if (currNode == root)
             {
                 if (currNode.Color == NodeColor.RED)
@@ -113,6 +112,10 @@ namespace RedBlackTree
                         Rebalance(null);
                     }
                 }
+            }
+            else if (currNode == null)
+            {
+                return;
             }
             else
             {
@@ -143,8 +146,12 @@ namespace RedBlackTree
                         {
                             //My brother and child are red! A promotion is necessary!
                             Promotion(currNode);
+                            try
+                            {
+                                Rebalance(currNode.Parent.Parent);
+                            }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
 
-                            Rebalance(currNode.Parent.Parent);
                         }
                         else if (comp == -1)
                         {
@@ -154,12 +161,22 @@ namespace RedBlackTree
                             Print();
                             Right(currNode);
                             Print();
+                            try
+                            {
+                                Rebalance(currNode.Parent.Parent.Parent);
+                            }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
                         }
                         else
                         {
                             //I'm a left child! My left child is red! left() is needed!
                             Left(currNode);
                             Print();
+                            try
+                            {
+                                Rebalance(currNode.Parent.Parent.Parent);
+                            }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
                         }
                     }
 
@@ -171,6 +188,11 @@ namespace RedBlackTree
                         {
                             //My brother and child are red! A promotion is necessary!
                             Promotion(currNode);
+                            try
+                            {
+                                Rebalance(currNode.Parent.Parent.Parent);
+                            }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
                         }
                         else if (comp == -1)
                         {
@@ -178,6 +200,11 @@ namespace RedBlackTree
                             Console.WriteLine("Right rotation!");
                             Right(currNode);
                             Print();
+                            try
+                            {
+                                Rebalance(currNode.Parent.Parent.Parent);
+                            }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
                         }
                         else
                         {
@@ -187,6 +214,11 @@ namespace RedBlackTree
                             Print();
                             Left(currNode);
                             Print();
+                            try
+                            {
+                                Rebalance(currNode.Parent.Parent.Parent);
+                            }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
                         }
                     }
 
