@@ -190,7 +190,7 @@ namespace RedBlackTree
                             Promotion(currNode);
                             try
                             {
-                                Rebalance(currNode.Parent.Parent.Parent);
+                                Rebalance(currNode.Parent.Parent);
                             }
                             catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
                         }
@@ -306,7 +306,19 @@ namespace RedBlackTree
                 parentOfAddition.LeftChild = parentOfAddition.Parent;                   //set C's left child to a
                 parentOfAddition.Parent = parentOfAddition.Parent.Parent;               //set C's parent to a's parent
                 parentOfAddition.LeftChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
+
+
+                //-1 if right child, if left child
+                if (parentOfAddition.Parent.Data.CompareTo(parentOfAddition.Data) == -1)
+                {
+                    parentOfAddition.Parent.RightChild = parentOfAddition;
+                }
+                else
+                {
+                    parentOfAddition.Parent.LeftChild = parentOfAddition;
+                }
             }
+
             //Checks that the nodes are of different colors. If they are, changes the color of each.
             //This works beacuse we only have two colors, so if they do not match, we can just convert each to the opposite color and be correct.
             //Otherwise, does nothing
