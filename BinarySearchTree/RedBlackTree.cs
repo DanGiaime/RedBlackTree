@@ -24,7 +24,7 @@ namespace RedBlackTree
 
 
         /// <summary>
-        /// Adds a node to the tree.
+        /// Adds a node to the tree. Basic BST insertion, then calls RebalanceInsert.
         /// </summary>
         /// <param name="nodeToAdd">Node to be added to the tree.</param>
         /// <param name="currNode">Node currently being examined. This defaults to the root.</param>
@@ -50,7 +50,7 @@ namespace RedBlackTree
                         currNode.LeftChild = nodeToAdd;
                         nodeToAdd.Parent = currNode;
                         Console.WriteLine(nodeToAdd.Data + " is now the left child of " + currNode.Data);
-                        Rebalance(nodeToAdd.Parent);
+                        RebalanceInsert(nodeToAdd.Parent);
                         return true;
                     }
                     else
@@ -65,7 +65,7 @@ namespace RedBlackTree
                         currNode.RightChild = nodeToAdd;
                         nodeToAdd.Parent = currNode;
                         Console.WriteLine(nodeToAdd.Data + " is now the right child of " + currNode.Data);
-                        Rebalance(nodeToAdd.Parent);
+                        RebalanceInsert(nodeToAdd.Parent);
                         return true;
                     }
                     else
@@ -75,7 +75,7 @@ namespace RedBlackTree
                 }
                 else
                 {
-                    Rebalance(nodeToAdd.Parent);
+                    RebalanceInsert(nodeToAdd.Parent);
                     return false;
                 }
             }
@@ -86,7 +86,7 @@ namespace RedBlackTree
         /// Rebalances the tree from the parent of the added node.
         /// </summary>
         /// <param name="currNode">The parent of the node that was added.</param>
-        private void Rebalance(RBTNode<TData> currNode)
+        private void RebalanceInsert(RBTNode<TData> currNode)
         {
             Console.WriteLine("Rebalancing!");
 
@@ -104,23 +104,32 @@ namespace RedBlackTree
                     if (currNode.RightChild.Color == NodeColor.RED)
                     {
                         Right(currNode);
-                        Rebalance(null);
+                        /* In this scenario, after this Rebalance, there is nothing left to rebalance
+                         * So, we call rebalance on null, which will handle the root being red
+                         * (if it is red), then end the rebalancing cycle.
+                         */
+                        RebalanceInsert(null);
                     }
                     else if (currNode.LeftChild.Color == NodeColor.RED)
                     {
                         Left(currNode);
-                        Rebalance(null);
+                        /* In this scenario, after this Rebalance, there is nothing left to rebalance
+                         * So, we call rebalance on null, which will handle the root being red
+                         * (if it is red), then end the rebalancing cycle.
+                         */
+                        RebalanceInsert(null);
                     }
                 }
             }
             else if (currNode == null)
             {
+                //This is how we escape! This means we have rebalanced everything and the root is black.
                 return;
             }
             else
             {
 
-                //-1 if right child, if left child
+                //-1 if right child, 1 if left child
                 int comp = currNode.Parent.Data.CompareTo(currNode.Data);
 
                 //If the uncle of the added node is red, a promotion is possible.
@@ -134,6 +143,7 @@ namespace RedBlackTree
                 {
                     promotion = false;
                 }
+
                 //If the parent of the added node isn't red, we don't need to do anything
                 if (currNode.Color == NodeColor.RED)
                 {
@@ -148,14 +158,46 @@ namespace RedBlackTree
                             Promotion(currNode);
                             try
                             {
-                                Rebalance(currNode.Parent.Parent);
+                                /*If there exists a grandpa, we rebalance from there.
+                                 *If not, we have reached the top of the tree, so we call RebalanceInsert on null.
+                                 */
+                                RebalanceInsert(currNode.Parent.Parent);
                             }
-                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); RebalanceInsert(null); }
 
                         }
                         else if (comp == -1)
                         {
                             //I'm a right child! My left child is red! rightleft() is needed!
+
+                            /*
+                             * Ok, so what is rightleft()?
+                             * It's not actually a method in our case, but is a concept.
+                             * In order to resolve the following scenario, two consecutive rotations are needed.
+                             * 
+                             *         a                 a                    b
+                             *          \                 \                  / \
+                             *           C      -->        B        -->     A   C
+                             *          /                   \
+                             *         B                     C
+                             *         
+                             * This is obviously a very basic form, as I have not included any
+                             * theoretical children, but those are not necessarry for understanding this scenario.
+                             * In order to handle this situation, we must preform a Left() rotation from B,
+                             * then a Right() rotation from B.
+                             * 
+                             * Effectively, the goal of the first rotation is to move the nodes 
+                             * so that they match the right rotation scenario.
+                             * By placing B above C, we create a Right() rotation scenario, which we know how to handle.
+                             * So, by performing a Left() rotation from B, we will create that scenario.
+                             * 
+                             * Since the Left() and Right() rotations are already set up to handle
+                             * and children not shown in the diagram, we do not need to consider them.
+                             *
+                             * Note that we must save B in a temporary variable to ensure we can
+                             * perform two rotations on it without losing track of it. 
+                             * Note that we first call Left(B), then Right(B).        
+                             */
                             currNode = currNode.LeftChild;
                             Left(currNode);
                             Print();
@@ -163,9 +205,9 @@ namespace RedBlackTree
                             Print();
                             try
                             {
-                                Rebalance(currNode.Parent.Parent.Parent);
+                                RebalanceInsert(currNode.Parent.Parent.Parent);
                             }
-                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); RebalanceInsert(null); }
                         }
                         else
                         {
@@ -174,9 +216,15 @@ namespace RedBlackTree
                             Print();
                             try
                             {
-                                Rebalance(currNode.Parent.Parent.Parent);
+                                /* If there exists a great grandpa, we rebalance from there.
+                                 * If not, we have reached the top of the tree, so we call RebalanceInsert on null.
+                                 * Why a great grandpa and not just a grandpa?
+                                 * In this scenario, the parent of currNode will end up black, meaning the only way
+                                 * we would need to Rebalance would be if the grandpa and great grandpa were both red.
+                                 */
+                                RebalanceInsert(currNode.Parent.Parent.Parent);
                             }
-                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); RebalanceInsert(null); }
                         }
                     }
 
@@ -190,9 +238,12 @@ namespace RedBlackTree
                             Promotion(currNode);
                             try
                             {
-                                Rebalance(currNode.Parent.Parent);
+                                /*If there exists a grandpa, we rebalance from there.
+                                 *If not, we have reached the top of the tree, so we call RebalanceInsert on null.
+                                 */
+                                RebalanceInsert(currNode.Parent.Parent);
                             }
-                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); RebalanceInsert(null); }
                         }
                         else if (comp == -1)
                         {
@@ -202,13 +253,22 @@ namespace RedBlackTree
                             Print();
                             try
                             {
-                                Rebalance(currNode.Parent.Parent.Parent);
+                                /* If there exists a great grandpa, we rebalance from there.
+                                 * If not, we have reached the top of the tree, so we call RebalanceInsert on null.
+                                 * Why a great grandpa and not just a grandpa?
+                                 * In this scenario, the parent of currNode will end up black, meaning the only way
+                                 * we would need to Rebalance would be if the grandpa and great grandpa were both red.
+                                 */
+                                RebalanceInsert(currNode.Parent.Parent.Parent);
                             }
-                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); RebalanceInsert(null); }
                         }
                         else
                         {
-                            //I'm a left child! My right child is red! leftright() is needed!
+                            /* I'm a left child! My right child is red! leftright() is needed!
+                             * This is simply a mirror of the above rightleft() scenario,
+                             * check that to understand why we rotate in this way.
+                            */
                             currNode = currNode.RightChild;
                             Right(currNode);
                             Print();
@@ -216,9 +276,15 @@ namespace RedBlackTree
                             Print();
                             try
                             {
-                                Rebalance(currNode.Parent.Parent.Parent);
+                                /* If there exists a great grandpa, we rebalance from there.
+                                 * If not, we have reached the top of the tree, so we call RebalanceInsert on null.
+                                 * Why a great grandpa and not just a grandpa?
+                                 * In this scenario, the parent of currNode will end up black, meaning the only way
+                                 * we would need to Rebalance would be if the grandpa and great grandpa were both red.
+                                 */
+                                RebalanceInsert(currNode.Parent.Parent.Parent);
                             }
-                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); Rebalance(null); }
+                            catch (NullReferenceException e) { Console.WriteLine("No grandpa! null it is!"); RebalanceInsert(null); }
                         }
                     }
 
@@ -308,7 +374,11 @@ namespace RedBlackTree
                 parentOfAddition.LeftChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
 
 
-                //-1 if right child, if left child
+                /*  This just checks to see if a was a left or right child,
+                 *  so that a's parent has the appropriate child set to c
+                 *  -1 if right child, 1 if left child
+                */
+
                 if (parentOfAddition.Parent.Data.CompareTo(parentOfAddition.Data) == -1)
                 {
                     parentOfAddition.Parent.RightChild = parentOfAddition;
@@ -346,7 +416,7 @@ namespace RedBlackTree
          * We're just going to cover the exact manner in which we will perform this shift
          * 
          * Set d's left child to c
-         * TODO: continue this
+         * 
          * 
          */
         private void Left(RBTNode<TData> parentOfAddition)
@@ -356,29 +426,32 @@ namespace RedBlackTree
             if (parentOfAddition.Parent == root)
             {
                 Console.WriteLine("Beginning Left shift of " + parentOfAddition.Data);
-                parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set a's right child to b
+                parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set d's left child to c
                 if (parentOfAddition.RightChild != null)
                 {
-                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;       //set b's parent to a
+                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;       //set c's parent to d
                 }
-                parentOfAddition.RightChild = parentOfAddition.Parent;                  //set C's left child to a
+                parentOfAddition.RightChild = parentOfAddition.Parent;                  //set B's right child to d
                 parentOfAddition.Parent = null;                                         //set the new root's parent to null
-                root = parentOfAddition;
-                parentOfAddition.RightChild.Parent = parentOfAddition;                  //set a's parent to C **Note: at this point, a is the leftChild of our node**
+                root = parentOfAddition;                                                //set the actual root of the 
+                parentOfAddition.RightChild.Parent = parentOfAddition;                  //set d's parent to b **Note: at this point, a is the leftChild of our node**
             }
             else
             {
                 Console.WriteLine("Beginning Left shift of " + parentOfAddition.Data);
-                parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set a's right child to b
+                parentOfAddition.Parent.LeftChild = parentOfAddition.RightChild;        //set d's left child to c
                 if (parentOfAddition.RightChild != null)
                 {
-                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;       //set b's parent to a
+                    parentOfAddition.RightChild.Parent = parentOfAddition.Parent;       //set c's parent to d
                 }
-                parentOfAddition.RightChild = parentOfAddition.Parent;                   //set C's left child to a
-                parentOfAddition.Parent = parentOfAddition.Parent.Parent;                //set C's parent to a's parent
-                parentOfAddition.RightChild.Parent = parentOfAddition;                   //set a's parent to C **Note: at this point, a is the leftChild of our node**
+                parentOfAddition.RightChild = parentOfAddition.Parent;                   //set B's right child to d
+                parentOfAddition.Parent = parentOfAddition.Parent.Parent;                //set B's parent to d's previous parent
+                parentOfAddition.RightChild.Parent = parentOfAddition;                   //set d's parent to b **Note: at this point, a is the leftChild of our node**
 
-                //-1 if right child, if left child
+                /*  This just checks to see if d was a left or right child,
+                 *  so that d's parent has the appropriate child set to B
+                 *  -1 if right child, 1 if left child
+                 */
                 if (parentOfAddition.Parent.Data.CompareTo(parentOfAddition.Data) == -1)
                 {
                     parentOfAddition.Parent.RightChild = parentOfAddition;
