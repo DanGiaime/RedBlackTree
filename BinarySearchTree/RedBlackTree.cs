@@ -491,6 +491,13 @@ namespace RedBlackTree
 
         }
 
+
+        /// <summary>
+        /// Removes a node from the tree, then calls appropriate rebalance.
+        /// </summary>
+        /// <param name="nodeToRemove">Node to be temoved from tree</param>
+        /// <param name="currNode">Current node in traversal</param>
+        /// <returns></returns>
         public bool Remove(RBTNode<TData> nodeToRemove, RBTNode<TData> currNode = null)
         {
 
@@ -562,43 +569,45 @@ namespace RedBlackTree
                      *        B     C
                      *       / \   / \
                      *      D   E F   G
-                     *      
-                     * Alright, so  A is our root. If we want to remove A, we definitely need to set C as the new root.
-                     * However, doing that isn't so easy. C has children that need to be dealt with.
-                     * We know that all of C's children are greater than A, so what does that tell us?
-                     * Well, we know for sure that C, F, and G are greater than B, D, and E.
-                     * Since this is true, B can be placed as a left child of F, since B, as well as B's children, are less than F.
+                     *              
+                     * Alright, so  A is our root. If we want to remove A, we want to replace A with it's lowest right child, F.
+                     * This isn't very hard, as it just means we will need to traverse the right tree, and effectively "remove" F.
+                     * How do we find F? We simply move right from A, then move left as many times as possible.
+                     * Well, we know for sure that C and G are greater than F, and that B, D, and E are less than C,
+                     * so no nodes need to be moved other than F, and possibly F's right child (if it has one).
                      * 
                      * So, what is our process?
                      * 
-                     * Set C to the new root.
-                     * Set B as the lowest child in C's left tree. (vvv SEE IMPORTANT NOTE vvv)
-                     * Clean up A by removing all of its references.
-                     * Set C's parent to null, since C is now the root.
+                     * Set our current node to C (the right child of A).
+                     * Find the leftmost child of C (which could very well be C)(in this example, this is F).
+                     * If F has a right child (we'll call it T), set that right child to F's old position
+                     * This consists of the following steps:
+                     *  Set T's parent = F's parent
+                     *  Set F's parent's left child = T
+                     * Moving back to the main removal, Simply copy F's data to A.
+                     * This will maintain all pointers and children and such, but effectively "copy" F to A's position.
+                     * Clean up old F by removing all of its references.
                      * This results in the following tree:
                      * 
-                     *          C
-                     *        /   \
-                     *       F     G
-                     *      /
-                     *     B
-                     *    / \
-                     *   D   E 
+                     *           F
+                     *         /   \
+                     *        B     C
+                     *       / \     \
+                     *      D   E     G
                      *   
                      *   IMPORTANT NOTE:
-                     *   If F has any left children, we must go all the way down until there are no more left children.
-                     *   In other words, B is being inserted at the bottom left of C's left tree, because B is less than all of those values.
-                     *   This may seem extremely complicated, but in reality, all we're doing is readding B to the tree, starting from C.
-                     *   B can maintain all of its children (as these will not change). 
-                     *   So, we just add B to the tree as though it were new, and all of its descendents will come with it.
+                     *   If F has any right children, they would be the left child of C.
                     */
                     else
                     {
-                        root = currNode.RightChild;
-                        Add(currNode.LeftChild);
-                        currNode.LeftChild = null;
-                        currNode.RightChild = null;
-                        root.Parent = null;
+                        RBTNode<TData> F = MinNode(currNode.RightChild);
+                        if (F.RightChild != null)
+                        {
+                            F.RightChild.Parent = F.Parent;
+                        }
+                        F.Parent.LeftChild = F.RightChild;
+                        root.Data = F.Data;
+                        F.Free();
                         return true;
                     }
                 }
@@ -682,8 +691,7 @@ namespace RedBlackTree
 
                         //This happens regardless of what type of child our nodeToRemove is.
                         currNode.LeftChild.Parent = currNode.Parent;
-                        currNode.Parent = null;
-                        currNode.LeftChild = null;
+                        currNode.Free();
 
                         //return true, since we successfully added a node.
                         return true;
@@ -713,27 +721,19 @@ namespace RedBlackTree
                     }
 
                     //Final case: Two children. This scenario has been covered in the root scenario
-                    //The only difference is that we must account for the parent of the nodeToRemove
-                    //Instead of setting the node replacing our nodeToRemove equal to root,
-                    //we make it the correct child of its parent
+                    //Since we simply copy the data, we do not actually have to change any pointers,
+                    //so this becomes very simple.
                     else
                     {
                         Console.WriteLine("Two kids!");
-                        if (comp == 1)
+                        RBTNode<TData> F = MinNode(currNode.RightChild);
+                        if (F.RightChild != null)
                         {
-                            //Was I removing a right child? Then my replacement will become a right child
-                            currNode.Parent.LeftChild = currNode.RightChild;
+                            F.RightChild.Parent = F.Parent;
                         }
-                        else
-                        {
-                            //Was I replacing a left child? Then my replacement will become a left child
-                            currNode.Parent.RightChild = currNode.RightChild;
-                        }
-                        Add(currNode.LeftChild);                                //Add the left child, as we did in the root example
-                        currNode.RightChild.Parent = currNode.Parent;           //Set our replacement's parent to the currNode's parent
-                        currNode.LeftChild = null;                              //Clean up currNode
-                        currNode.RightChild = null;
-                        currNode.Parent = null;
+                        F.Parent.LeftChild = F.RightChild;
+                        currNode.Data = F.Data;
+                        F.Free();
                         return true;
                     }
 
@@ -743,6 +743,16 @@ namespace RedBlackTree
                 return false;
             }
 
+        }
+
+        /// <summary>
+        /// Finds the minimum node from a given node
+        /// </summary>
+        /// <param name="currNode">Node to find minimum from. Should generally be </param>
+        /// <returns>RBTNode representing the lowest child of given node</returns>
+        private RBTNode<TData> MinNode(RBTNode<TData> currNode)
+        {
+            return currNode.LeftChild != null ? MinNode(currNode.LeftChild) : currNode;
         }
 
         public void Print()

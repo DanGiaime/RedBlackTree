@@ -71,6 +71,12 @@ namespace RedBlackTree
             set { color = value; }
         }
 
+        public void Free() {
+            Data = default(TData);
+            leftChild = null;
+            rightChild = null;
+            parent = null;
+        }
 
     }
 }

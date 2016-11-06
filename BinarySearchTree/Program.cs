@@ -13,6 +13,7 @@ namespace RedBlackTree
             RedBlackTree<int> myRBT = new RedBlackTree<int>();
             String input = "";
             RBTNode<int> currNode = null;
+
             while (input != "done") {
                 Console.WriteLine();
                 Console.WriteLine("Enter a command");
