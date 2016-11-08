@@ -679,45 +679,62 @@ namespace RedBlackTree
                     //Checks that the Node has only a left child
                     else if (currNode.LeftChild != null && currNode.RightChild == null)
                     {
-                        Console.WriteLine("Only a left child!");
-                        if (comp == 1)
+                        RBTNode<TData> maxNode = MaxNode(currNode.LeftChild);
+                        currNode.Data = maxNode.Data;
+                        if (currNode == maxNode)
                         {
-                            currNode.Parent.LeftChild = currNode.LeftChild;
+                            Console.WriteLine("Only a left child!");
+                            if (comp == 1)
+                            {
+                                currNode.Parent.LeftChild = currNode.LeftChild;
+                            }
+                            else
+                            {
+                                currNode.Parent.RightChild = currNode.LeftChild;
+                            }
+
+                            //This happens regardless of what type of child our nodeToRemove is.
+                            currNode.LeftChild.Parent = currNode.Parent;
+                            currNode.Free();
+
+                            //return true, since we successfully added a node.
+                            return true;
                         }
                         else
                         {
-                            currNode.Parent.RightChild = currNode.LeftChild;
+                            return Remove(maxNode);
                         }
-
-                        //This happens regardless of what type of child our nodeToRemove is.
-                        currNode.LeftChild.Parent = currNode.Parent;
-                        currNode.Free();
-
-                        //return true, since we successfully added a node.
-                        return true;
                     }
 
                     //Checks that the Node has only a right child
                     else if (currNode.LeftChild == null && currNode.RightChild != null)
                     {
                         Console.WriteLine("Only a right child!");
-                        if (comp == 1)
+                        RBTNode<TData> minNode = MinNode(currNode.LeftChild);
+                        currNode.Data = minNode.Data;
+                        if (currNode == minNode)
                         {
-                            currNode.Parent.LeftChild = currNode.RightChild;
+                            if (comp == 1)
+                            {
+                                currNode.Parent.LeftChild = currNode.RightChild;
+                            }
+                            else
+                            {
+                                currNode.Parent.RightChild = currNode.RightChild;
+                            }
+
+                            //This happens regardless of what type of child our nodeToRemove is.
+                            currNode.RightChild.Parent = currNode.Parent;
+                            currNode.Parent = null;
+                            currNode.LeftChild = null;
+
+                            //return true, since we successfully added a node.
+                            return true;
                         }
                         else
                         {
-                            currNode.Parent.RightChild = currNode.RightChild;
+                            return Remove(minNode);
                         }
-
-                        //This happens regardless of what type of child our nodeToRemove is.
-                        currNode.RightChild.Parent = currNode.Parent;
-                        currNode.Parent = null;
-                        currNode.LeftChild = null;
-
-                        //return true, since we successfully added a node.
-                        return true;
-
                     }
 
                     //Final case: Two children. This scenario has been covered in the root scenario
@@ -745,14 +762,165 @@ namespace RedBlackTree
 
         }
 
+        public bool RBTRemove(RBTNode<TData> v)
+        {
+            /*
+             * Removal is a bit confusing. 
+             * Unlike insertion, which depends on the uncle of the inserted node, 
+             * removal depends on the sibling of the node to be removed.
+             * The following notation will be used the removal process:
+             * 
+             *          p
+             *         / \
+             *        v   s
+             *       /     \
+             *      u       r
+             * 
+             * Where v is the node to remove,
+             * u is the child of the (left or right) of v,
+             * p is the parent of u,
+             * s is the child of p this is not v,
+             * r is the red child of s (right or left, or right in the case of both).
+             * 
+             * Removal has many, many cases based on the color of these nodes.
+             * The important thing to keep in mind is that the node to be removed
+             * will always have either one child or none, based on standard BST removal.
+             */
+            RBTNode<TData> u;
+            RBTNode<TData> p = v.Parent;
+            RBTNode<TData> s;
+            RBTNode<TData> r;
+
+            /*
+             * First off, we've got to correctly set each of these nodes.
+             * Since v can only have 1 child, u can be either the left child, the right child, or null.
+             * The following check will figure out which child u is, then set it to that.
+             */
+            if (v.LeftChild != null)
+            {
+                u = v.LeftChild;
+            }
+            else if (v.RightChild != null)
+            {
+                u = v.RightChild;
+            }
+            else
+            {
+                u = null;
+            }
+
+            /*
+             * Next up is s. In order to determine what child s is, we need to figure out which child v is.
+             * We can do this with a simple data comparison.
+             * 
+             * **IMPORTANT NOTE**
+             * If the parent is null, v is root. In this case, we cannot make a comparison.
+             * Therefore, we need an extra conditional 
+             */
+            if (p != null)
+            {
+                //vCompP will be -1 if v is a left child, or 1 if v is a right child
+                int vCompP = v.Data.CompareTo(p.Data);
+
+
+                if (vCompP == -1)
+                {
+                    //If v is a right child...
+                    //v's sibling must be the left child!
+                    s = p.LeftChild;
+                }
+                else
+                {
+                    //otherwise, v's sibling is the right chil!
+                    s = p.RightChild;
+                }
+
+                /*
+                 * Now, when we go to find r, we need to keep in mind that r is the RED child of s.
+                 * Also, we need to keep in mind that in the case of both children being red, right gets preference.
+                 * As such, we first check if the right child exists and is red,
+                 * and otherwise we check if the left child exists and is red.
+                 * Or, of course, there can be no red children, in which case r is null;
+                 */
+
+                if (s.RightChild != null && s.RightChild.Color == NodeColor.RED)
+                {
+                    r = s.RightChild;
+                }
+                else if (s.LeftChild != null && s.LeftChild.Color == NodeColor.RED)
+                {
+                    r = s.LeftChild;
+                }
+                else
+                {
+                    r = null;
+                }
+
+                /*
+                 * Alright, now that we've got our variables set, it's time to go over cases.
+                 * Since there are so many, we're going to explain them as we cover them,
+                 * as opposed to looking through them all now. 
+                 */
+
+                /*
+                 * Simple Case: either u or v is red.
+                 * In this case, we can simply mark the replaced child as black.
+                 * Since only one of them can have been red, this will maintain black height.
+                 * So, we simply remove v as normal, then recolor u to be black.
+                 */
+                if (u.Color == NodeColor.RED || v.Color == NodeColor.RED)
+                {
+                    Remove(v);
+                    u.Color = NodeColor.RED;
+                }
+                /*
+                 * Second Case: both u and v are black.
+                 * Here, we begin our encounter with double black nodes.
+                 * The double black color is a tool used to help us balance after removal.
+                 * Often times, our double black node will be null,
+                 * in which case, we can simply perform the appropriate operations,
+                 * as we will know that there is a theoretical "double black null" leaf there.
+                 * 
+                 * The only real rule to remember with double black nodes, is that they cannot exist,
+                 * so we make them simply to remove them.
+                 */
+                else if (u.Color == NodeColor.BLACK && v.Color == NodeColor.BLACK)
+                {
+
+                }
+
+
+
+
+            }
+            else
+            {
+                s = null;
+                r = null;
+            }
+
+
+            //if (v == root) { root = null; }
+        }
+
         /// <summary>
         /// Finds the minimum node from a given node
         /// </summary>
-        /// <param name="currNode">Node to find minimum from. Should generally be </param>
+        /// <param name="currNode">Node to find minimum from. Should generally be a right child</param>
         /// <returns>RBTNode representing the lowest child of given node</returns>
         private RBTNode<TData> MinNode(RBTNode<TData> currNode)
         {
             return currNode.LeftChild != null ? MinNode(currNode.LeftChild) : currNode;
+        }
+
+        /// <summary>
+        /// Finds the maximum node from a given node
+        /// </summary>
+        /// <param name="currNode">Node to find maximum from. Should generally be a left child</param>
+        /// <returns>RBTNode representing the lowest child of given node</returns>
+        private RBTNode<TData> MaxNode(RBTNode<TData> currNode)
+        {
+            return currNode.RightChild != null ? MaxNode(currNode.RightChild) : currNode;
         }
 
         public void Print()
