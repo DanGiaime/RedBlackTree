@@ -544,6 +544,7 @@ namespace RedBlackTree
                     //If the root has no children, simply delete the root.
                     if (currNode.LeftChild == null && currNode.RightChild == null)
                     {
+                        Console.WriteLine("No children!");
                         root = null;
                         return true;
                     }
@@ -551,6 +552,7 @@ namespace RedBlackTree
                     //Then, clean up the previous root by removing all of its references
                     else if (currNode.LeftChild != null && currNode.RightChild == null)
                     {
+                        Console.WriteLine("Only a left child!");
                         root = currNode.LeftChild;
                         currNode.LeftChild = null;
                         return true;
@@ -559,6 +561,7 @@ namespace RedBlackTree
                     //then, clean up the previous root by removing all of its referenecs
                     else if (currNode.LeftChild == null && currNode.RightChild != null)
                     {
+                        Console.WriteLine("Only a right child!");
                         root = currNode.RightChild;
                         currNode.RightChild = null;
                         return true;
@@ -600,13 +603,23 @@ namespace RedBlackTree
                     */
                     else
                     {
+                        Console.WriteLine("two children!");
                         RBTNode<TData> F = MinNode(currNode.RightChild);
+                        Console.WriteLine("Node to actually remove: "+F.Data);
                         if (F.RightChild != null)
                         {
                             F.RightChild.Parent = F.Parent;
                         }
-                        F.Parent.LeftChild = F.RightChild;
+
                         root.Data = F.Data;
+
+                        if (F.Parent != root)
+                        {
+                            F.Parent.LeftChild = F.RightChild;
+                            F.RightChild.Parent = F.Parent;
+                        }
+                        Remove(F,F);
+                        
                         F.Free();
                         return true;
                     }
@@ -680,9 +693,11 @@ namespace RedBlackTree
                     else if (currNode.LeftChild != null && currNode.RightChild == null)
                     {
                         RBTNode<TData> maxNode = MaxNode(currNode.LeftChild);
-                        currNode.Data = maxNode.Data;
-                        if (currNode == maxNode)
+                        Console.WriteLine("currNode: " + currNode.Data);
+                        Console.WriteLine("Node to actually remove: "+ maxNode.Data);
+                        if (currNode.Data.CompareTo(maxNode.Data) == 0)
                         {
+                            Console.WriteLine("Now deleting " + currNode.Data);
                             Console.WriteLine("Only a left child!");
                             if (comp == 1)
                             {
@@ -702,6 +717,8 @@ namespace RedBlackTree
                         }
                         else
                         {
+                            currNode.Data = maxNode.Data;
+                            Console.WriteLine("Only a left child! I'm not "+maxNode.Data);
                             return Remove(maxNode);
                         }
                     }
@@ -710,9 +727,8 @@ namespace RedBlackTree
                     else if (currNode.LeftChild == null && currNode.RightChild != null)
                     {
                         Console.WriteLine("Only a right child!");
-                        RBTNode<TData> minNode = MinNode(currNode.LeftChild);
-                        currNode.Data = minNode.Data;
-                        if (currNode == minNode)
+                        RBTNode<TData> minNode = MinNode(currNode.RightChild);
+                        if (currNode.Data.CompareTo(minNode.Data)==0)
                         {
                             if (comp == 1)
                             {
@@ -733,6 +749,8 @@ namespace RedBlackTree
                         }
                         else
                         {
+                            currNode.Data = minNode.Data;
+                            Console.WriteLine("Only a right child!");
                             return Remove(minNode);
                         }
                     }
@@ -744,6 +762,7 @@ namespace RedBlackTree
                     {
                         Console.WriteLine("Two kids!");
                         RBTNode<TData> F = MinNode(currNode.RightChild);
+                        Console.WriteLine("Node to actually remove: "+F.Data);
                         if (F.RightChild != null)
                         {
                             F.RightChild.Parent = F.Parent;
@@ -899,7 +918,7 @@ namespace RedBlackTree
                 r = null;
             }
 
-
+            return true;
             //if (v == root) { root = null; }
         }
 
