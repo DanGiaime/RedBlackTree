@@ -811,7 +811,7 @@ namespace RedBlackTree
              * removal depends on the sibling of the node to be removed.
              * The following notation will be used the removal process:
              * 
-             *          p
+             /*          p
              *         / \
              *        v   s
              *       /     \
@@ -827,163 +827,64 @@ namespace RedBlackTree
              * The important thing to keep in mind is that the node to be removed
              * will always have either one child or none, based on standard BST removal.
              */
-            RBTNode<TData> u;
-            RBTNode<TData> p = v.Parent;
-            RBTNode<TData> s;
-            RBTNode<TData> r;
+
+            Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>> 
+                relativeNodes = FitToModel(v);
+
+            RBTNode<TData> u = relativeNodes.Item1;
+            RBTNode<TData> p = relativeNodes.Item2;
+            RBTNode<TData> s = relativeNodes.Item3;
+            RBTNode<TData> r = relativeNodes.Item4;
+
+
 
             /*
-             * First off, we've got to correctly set each of these nodes.
-             * Since v can only have 1 child, 
-             * u can be either the left child, the right child, or null.
-             * The following check will figure out which child u is, then set it to that.
+             * Alright, now that we've got our variables set, 
+             * it's time to go over cases.
+             * Since there are so many, 
+             * we're going to explain them as we cover them,
+             * as opposed to looking through them all now. 
              */
-            if (v.LeftChild != null)
+
+            /*
+            * Simple Case: either u or v is red.
+            * In this case, we can simply mark the replaced child as black.
+            * Since only one of them can have been red, 
+            * this will maintain black height.
+            * So, we simply remove v as normal, then recolor u to be black.
+            */
+            if (u != null && u.Color == NodeColor.RED ||
+                v != null && v.Color == NodeColor.RED)
             {
-                u = v.LeftChild;
-                Console.WriteLine("u = " + u.Data);
-            }
-            else if (v.RightChild != null)
-            {
-                u = v.RightChild;
-                Console.WriteLine("u = " + u.Data);
+                Remove(v, v, true);
+
+                if (u != null)
+                {
+                    u.Color = NodeColor.RED;
+                }
+                return true;
             }
             else
             {
-                u = null;
-                Console.WriteLine("u = null");
-            }
-
-
-
-            /*
-             * Next up is s. In order to determine what child s is, 
-             * we need to figure out which child v is.
-             * We can do this with a simple data comparison.
-             * 
-             * **IMPORTANT NOTE**
-             * If the parent is null, v is root. 
-             * In this case, we cannot make a comparison.
-             * Therefore, we need an extra conditional 
-             */
-            if (p != null)
-            {
-                //vCompP will be -1 if v is a left child, or 1 if v is a right child
-                int vCompP = v.Data.CompareTo(p.Data);
-
-
-                if (vCompP == 1)
-                {
-                    //If v is a right child...
-                    //v's sibling must be the left child!
-                    s = p.LeftChild;
-                }
-                else
-                {
-                    //otherwise, v's sibling is the right child!
-                    s = p.RightChild;
-                }
-                Console.WriteLine("s = " + s.Data);
-
                 /*
-                 * Now, when we go to find r, 
-                 * we need to keep in mind that r is the RED child of s.
-                 * Also, we need to keep in mind that 
-                 * in the case of both children being red, right gets preference.
-                 * As such, we first check if the right child exists and is red,
-                 * and otherwise we check if the left child exists and is red.
-                 * Or, of course, there can be no red children, in which case r is null;
-                 */
-
-                if (s.RightChild != null && s.RightChild.Color == NodeColor.RED)
-                {
-                    r = s.RightChild;
-                    Console.WriteLine("r = " + r.Data);
-                }
-                else if (s.LeftChild != null && s.LeftChild.Color == NodeColor.RED)
-                {
-                    r = s.LeftChild;
-                    Console.WriteLine("r = " + r.Data);
-                }
-                else
-                {
-                    r = null;
-                    Console.WriteLine("r = null");
-                }
-
-                /*
-                 * Alright, now that we've got our variables set, 
-                 * it's time to go over cases.
-                 * Since there are so many, 
-                 * we're going to explain them as we cover them,
-                 * as opposed to looking through them all now. 
-                 */
-
-                /*
-                * Simple Case: either u or v is red.
-                * In this case, we can simply mark the replaced child as black.
-                * Since only one of them can have been red, 
-                * this will maintain black height.
-                * So, we simply remove v as normal, then recolor u to be black.
+                * Second Case: both u and v are black.
+                * Here, we begin our encounter with double black nodes.
+                * The double black color is a tool 
+                * used to help us balance after removal.
+                * 
+                * The only real rule to remember with double black nodes, 
+                * is that they cannot exist,
+                * so we create them simply to remove them.
+                * 
+                * When u and v are black, removing v will color u double black
+                * u will be null, however, so we can just move to rebalance without 
+                * really considering it. Rebalance will call itself with non-null nodes
+                * if necessary internally.
+                * 
                 */
-                if (u != null && u.Color == NodeColor.RED ||
-                    v != null && v.Color == NodeColor.RED)
-                {
-                    Remove(v, v, true);
-
-                    if (u != null)
-                    {
-                        u.Color = NodeColor.RED;
-                    }
-                }
-                else
-                {
-                    /*
-                    * Second Case: both u and v are black.
-                    * Here, we begin our encounter with double black nodes.
-                    * The double black color is a tool 
-                    * used to help us balance after removal.
-                    * 
-                    * The only real rule to remember with double black nodes, 
-                    * is that they cannot exist,
-                    * so we create them simply to remove them.
-                    * 
-                    * When u and v are black, removing v will color u double black
-                    * If there is no u, we create a null node where u would be and
-                    * color it double black.
-                    * 
-                    */
-                    int vComp = v.Data.CompareTo(p.Data);
-                    Remove(v, v, true);
-                    if (u == null)
-                    {
-                        if (vComp == 1)
-                        {
-                            u = new RBTNode<TData>(p.Data, null, null, NodeColor.DBLBLACK);
-                            p.RightChild = u;
-                            u.Parent = p;
-                        }
-                        else
-                        {
-                            u = new RBTNode<TData>(p.Data, null, null, NodeColor.DBLBLACK);
-                            p.LeftChild = u;
-                            u.Parent = p;
-                        }
-                    }
-                    else
-                    {
-                        u.Color = NodeColor.DBLBLACK;
-                    }
-                }
-
+                Remove(v, v, true);
                 //Begin rebalancing
                 RebalanceDoubleBlack(u, p, s, r);
-
-            }
-            else
-            {
-                s = null;
-                r = null;
             }
 
             return true;
@@ -1127,13 +1028,118 @@ namespace RedBlackTree
                 else
                 {
                     p.Color = NodeColor.DBLBLACK;
-                    //TODO - Method to find u, p, s, r given double black node to save repetition
+                    //Get model using this node as the double black
+                    Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>> 
+                        relativeNodes = FitToModel(p);
+                    RebalanceDoubleBlack(relativeNodes.Item1, 
+                        relativeNodes.Item2, 
+                        relativeNodes.Item3,
+                        relativeNodes.Item4);
+
                 }
                 s.Color = NodeColor.RED;
             }
-
-            Remove(u, u, true);
             return true;
+        }
+
+        private Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>>
+            FitToModel(RBTNode<TData> v)
+        {
+            RBTNode<TData> u;
+            RBTNode<TData> p = v.Parent;
+            RBTNode<TData> s;
+            RBTNode<TData> r;
+
+            /*
+             * First off, we've got to correctly set each of these nodes.
+             * Since v can only have 1 child, 
+             * u can be either the left child, the right child, or null.
+             * The following check will figure out which child u is, then set it to that.
+             */
+            if (v.LeftChild != null)
+            {
+                u = v.LeftChild;
+                Console.WriteLine("u = " + u.Data);
+            }
+            else if (v.RightChild != null)
+            {
+                u = v.RightChild;
+                Console.WriteLine("u = " + u.Data);
+            }
+            else
+            {
+                u = null;
+                Console.WriteLine("u = null");
+            }
+
+
+
+            /*
+             * Next up is s. In order to determine what child s is, 
+             * we need to figure out which child v is.
+             * We can do this with a simple data comparison.
+             * 
+             * **IMPORTANT NOTE**
+             * If the parent is null, v is root. 
+             * In this case, we cannot make a comparison.
+             * Therefore, we need an extra conditional 
+             */
+            if (p != null)
+            {
+                //vCompP will be -1 if v is a left child, or 1 if v is a right child
+                int vCompP = v.Data.CompareTo(p.Data);
+
+
+                if (vCompP == 1)
+                {
+                    //If v is a right child...
+                    //v's sibling must be the left child!
+                    s = p.LeftChild;
+                }
+                else
+                {
+                    //otherwise, v's sibling is the right child!
+                    s = p.RightChild;
+                }
+                Console.WriteLine("s = " + s.Data);
+
+                /*
+                 * Now, when we go to find r, 
+                 * we need to keep in mind that r is the RED child of s.
+                 * Also, we need to keep in mind that 
+                 * in the case of both children being red, right gets preference.
+                 * As such, we first check if the right child exists and is red,
+                 * and otherwise we check if the left child exists and is red.
+                 * Or, of course, there can be no red children, in which case r is null;
+                 */
+
+                if (s.RightChild != null && s.RightChild.Color == NodeColor.RED)
+                {
+                    r = s.RightChild;
+                    Console.WriteLine("r = " + r.Data);
+                }
+                else if (s.LeftChild != null && s.LeftChild.Color == NodeColor.RED)
+                {
+                    r = s.LeftChild;
+                    Console.WriteLine("r = " + r.Data);
+                }
+                else
+                {
+                    r = null;
+                    Console.WriteLine("r = null");
+                }
+
+            }
+            else
+            {
+                s = null;
+                r = null;
+            }
+            return new Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>>(
+                u,
+                p,
+                s,
+                r);
         }
         /// <summary>
         /// Finds the minimum node from a given node
