@@ -24,10 +24,11 @@ namespace RedBlackTree
 
 
         /// <summary>
-        /// Adds a node to the tree. Basic BST insertion, then calls RebalanceInsert.
+        /// Adds a node to the tree. Basic BST insertion, then calls RebalanceInsert.   
         /// </summary>
         /// <param name="nodeToAdd">Node to be added to the tree.</param>
-        /// <param name="currNode">Node currently being examined. This defaults to the root.</param>
+        /// <param name="currNode">Node currently being examined. 
+        /// This defaults to the root.</param>
         /// <returns>True if Node was added, false otherwise.</returns>
         public bool Add(RBTNode<TData> nodeToAdd, RBTNode<TData> currNode = null)
         {
@@ -303,34 +304,42 @@ namespace RedBlackTree
          *         b   D                b
          * Where D is the most recently added node
          * 
-         * The key to understanding rotations is understanding that a rotation consists of exactly three things:
+         * The key to understanding rotations is understanding that 
+         * a rotation consists of exactly three things:
          * 1) Two nodes shift position
          * 2) Those same two nodes swap colors
          * 3) The child of one node becomes the child of the other
          * 
          * So, in this scenario, a and C change positions
-         * In the right rotation, the grandparent of the added node becomes the left child of the parent of the added node
+         * In the right rotation, the grandparent of the added node becomes 
+         * the left child of the parent of the added node
          * So, a becomes C's left child.
          * Since there two nodes have shifted positions, they will swap their colors.
          * Since we previously had a and C, we now have A and c
          * 
          * ***IMPORTANT NOTE ABOUT COLOR SWAP:***
          * When two nodes switch colors, they will NOT ALWAYS BE DIFFERENT
-         * We will see this later when we get to the "rightleft" and "leftright" scenarios
-         * As such, if two nodes are red and change positions, the two nodes will "swap colors" from red to red.
+         * We will see this later when we get to the 
+         * "rightleft" and "leftright" scenarios
+         * As such, if two nodes are red and change positions, 
+         * the two nodes will "swap colors" from red to red.
          * 
-         * Since c now has A as it's left child, c's previous left child, b, must be appended to A
+         * Since c now has A as it's left child, 
+         * c's previous left child, b, must be appended to A
          * Since b must be greater than A, we append b as A's right child
          * 
          * ***IMPORTANT NOTE ABOUT CHILD SHIFT:***
          * Only one child of each moved node should change.
-         * In this scenario, A would maintain any previous left children, and c would maintain any previous right children
+         * In this scenario, A would maintain any previous left children, 
+         * and c would maintain any previous right children
          * 
          * So, now into the details, how do we, step by step, preform this operation?
          * 
-         * Our method takes in the node "parentofAddition", which is the parent of the node that has been added
+         * Our method takes in the node "parentofAddition", 
+         * which is the parent of the node that has been added
          * In our diagram, this is node C.
-         * Both nodes C and a must change positions, so we must simultaneously have C take a's place, 
+         * Both nodes C and a must change positions, 
+         * so we must simultaneously have C take a's place, 
          * while also not losing track of C's left child
          * 
          * So, for this movement, we must:
@@ -341,7 +350,8 @@ namespace RedBlackTree
          * Set a's parent to C
          * Swap the colors of a and C
          * 
-         * This order may seem a bit odd, but it ensures we don't accidentally lose any references mid swap
+         * This order may seem a bit odd, 
+         * but it ensures we don't accidentally lose any references mid swap
          * 
          */
         private void Right(RBTNode<TData> parentOfAddition)
@@ -402,7 +412,8 @@ namespace RedBlackTree
 
         /*
          * The Left rotation scenario is simply the inverse of the Right rotation
-         * As such, not much explanation beyond the previous is necessary, only that a few rights and lefts will swap.
+         * As such, not much explanation beyond the previous is necessary, 
+         * only that a few rights and lefts will swap.
          * However, for the sake of absolute clarity, let's go through it anyway.
          * 
          * In this example, capital letters are RED nodes, lowercase are black nodes
@@ -412,11 +423,13 @@ namespace RedBlackTree
          *    / \                  /
          *   A   c                c
          * 
-         * Since we've already discussed the importance of color swaps, and what a rotation consists of,
-         * We're just going to cover the exact manner in which we will perform this shift
+         * Since we've already discussed the importance of color swaps, 
+         * and what a rotation consists of,
+         * We're just going to cover the exact manner 
+         * in which we will perform this shift
          * 
          * Set d's left child to c
-         * 
+         * TODO: finish this doc.
          * 
          */
         private void Left(RBTNode<TData> parentOfAddition)
@@ -498,7 +511,7 @@ namespace RedBlackTree
         /// <param name="nodeToRemove">Node to be temoved from tree</param>
         /// <param name="currNode">Current node in traversal</param>
         /// <returns></returns>
-        public bool Remove(RBTNode<TData> nodeToRemove, RBTNode<TData> currNode = null)
+        public bool Remove(RBTNode<TData> nodeToRemove, RBTNode<TData> currNode = null, bool lastCall = false)
         {
 
             if (currNode == null)
@@ -555,6 +568,7 @@ namespace RedBlackTree
                         Console.WriteLine("Only a left child!");
                         root = currNode.LeftChild;
                         currNode.LeftChild = null;
+                        root.Color = NodeColor.BLACK;
                         return true;
                     }
                     //If the root has only a right child, set that right child to the root
@@ -564,6 +578,7 @@ namespace RedBlackTree
                         Console.WriteLine("Only a right child!");
                         root = currNode.RightChild;
                         currNode.RightChild = null;
+                        root.Color = NodeColor.BLACK;
                         return true;
                     }
                     /*Finally, we hit the case of two children. In this case, there are a few things we must do.
@@ -605,7 +620,7 @@ namespace RedBlackTree
                     {
                         Console.WriteLine("two children!");
                         RBTNode<TData> F = MinNode(currNode.RightChild);
-                        Console.WriteLine("Node to actually remove: "+F.Data);
+                        Console.WriteLine("Node to actually remove: " + F.Data);
                         if (F.RightChild != null)
                         {
                             F.RightChild.Parent = F.Parent;
@@ -618,8 +633,8 @@ namespace RedBlackTree
                             F.Parent.LeftChild = F.RightChild;
                             F.RightChild.Parent = F.Parent;
                         }
-                        Remove(F,F);
-                        
+                        Remove(F, F);
+
                         F.Free();
                         return true;
                     }
@@ -639,19 +654,26 @@ namespace RedBlackTree
                    */
                     if (currNode.LeftChild == null && currNode.RightChild == null)
                     {
-                        Console.WriteLine("No kids!");
-                        if (comp == 1)
+                        if (!lastCall)
                         {
-                            currNode.Parent.LeftChild = null;
-                            currNode.Parent = null;
+                            return RBTRemove(currNode);
                         }
                         else
                         {
+                            Console.WriteLine("No kids!");
+                            if (comp == 1)
+                            {
+                                currNode.Parent.LeftChild = null;
+                                currNode.Parent = null;
+                            }
+                            else
+                            {
 
-                            currNode.Parent.RightChild = null;
-                            currNode.Parent = null;
+                                currNode.Parent.RightChild = null;
+                                currNode.Parent = null;
+                            }
+                            return true;
                         }
-                        return true;
                     }
 
                     /*Case 2: One child
@@ -694,7 +716,7 @@ namespace RedBlackTree
                     {
                         RBTNode<TData> maxNode = MaxNode(currNode.LeftChild);
                         Console.WriteLine("currNode: " + currNode.Data);
-                        Console.WriteLine("Node to actually remove: "+ maxNode.Data);
+                        Console.WriteLine("Node to actually remove: " + maxNode.Data);
                         if (currNode.Data.CompareTo(maxNode.Data) == 0)
                         {
                             Console.WriteLine("Now deleting " + currNode.Data);
@@ -718,8 +740,8 @@ namespace RedBlackTree
                         else
                         {
                             currNode.Data = maxNode.Data;
-                            Console.WriteLine("Only a left child! I'm not "+maxNode.Data);
-                            return Remove(maxNode);
+                            Console.WriteLine("Only a left child! I'm not " + maxNode.Data);
+                            return RBTRemove(maxNode);
                         }
                     }
 
@@ -728,7 +750,7 @@ namespace RedBlackTree
                     {
                         Console.WriteLine("Only a right child!");
                         RBTNode<TData> minNode = MinNode(currNode.RightChild);
-                        if (currNode.Data.CompareTo(minNode.Data)==0)
+                        if (currNode.Data.CompareTo(minNode.Data) == 0)
                         {
                             if (comp == 1)
                             {
@@ -751,7 +773,7 @@ namespace RedBlackTree
                         {
                             currNode.Data = minNode.Data;
                             Console.WriteLine("Only a right child!");
-                            return Remove(minNode);
+                            return RBTRemove(minNode);
                         }
                     }
 
@@ -762,7 +784,7 @@ namespace RedBlackTree
                     {
                         Console.WriteLine("Two kids!");
                         RBTNode<TData> F = MinNode(currNode.RightChild);
-                        Console.WriteLine("Node to actually remove: "+F.Data);
+                        Console.WriteLine("Node to actually remove: " + F.Data);
                         if (F.RightChild != null)
                         {
                             F.RightChild.Parent = F.Parent;
@@ -812,28 +834,36 @@ namespace RedBlackTree
 
             /*
              * First off, we've got to correctly set each of these nodes.
-             * Since v can only have 1 child, u can be either the left child, the right child, or null.
+             * Since v can only have 1 child, 
+             * u can be either the left child, the right child, or null.
              * The following check will figure out which child u is, then set it to that.
              */
             if (v.LeftChild != null)
             {
                 u = v.LeftChild;
+                Console.WriteLine("u = " + u.Data);
             }
             else if (v.RightChild != null)
             {
                 u = v.RightChild;
+                Console.WriteLine("u = " + u.Data);
             }
             else
             {
                 u = null;
+                Console.WriteLine("u = null");
             }
 
+
+
             /*
-             * Next up is s. In order to determine what child s is, we need to figure out which child v is.
+             * Next up is s. In order to determine what child s is, 
+             * we need to figure out which child v is.
              * We can do this with a simple data comparison.
              * 
              * **IMPORTANT NOTE**
-             * If the parent is null, v is root. In this case, we cannot make a comparison.
+             * If the parent is null, v is root. 
+             * In this case, we cannot make a comparison.
              * Therefore, we need an extra conditional 
              */
             if (p != null)
@@ -842,7 +872,7 @@ namespace RedBlackTree
                 int vCompP = v.Data.CompareTo(p.Data);
 
 
-                if (vCompP == -1)
+                if (vCompP == 1)
                 {
                     //If v is a right child...
                     //v's sibling must be the left child!
@@ -853,10 +883,13 @@ namespace RedBlackTree
                     //otherwise, v's sibling is the right chil!
                     s = p.RightChild;
                 }
+                Console.WriteLine("s = " + s.Data);
 
                 /*
-                 * Now, when we go to find r, we need to keep in mind that r is the RED child of s.
-                 * Also, we need to keep in mind that in the case of both children being red, right gets preference.
+                 * Now, when we go to find r, 
+                 * we need to keep in mind that r is the RED child of s.
+                 * Also, we need to keep in mind that 
+                 * in the case of both children being red, right gets preference.
                  * As such, we first check if the right child exists and is red,
                  * and otherwise we check if the left child exists and is red.
                  * Or, of course, there can be no red children, in which case r is null;
@@ -865,49 +898,155 @@ namespace RedBlackTree
                 if (s.RightChild != null && s.RightChild.Color == NodeColor.RED)
                 {
                     r = s.RightChild;
+                    Console.WriteLine("r = " + r.Data);
                 }
                 else if (s.LeftChild != null && s.LeftChild.Color == NodeColor.RED)
                 {
                     r = s.LeftChild;
+                    Console.WriteLine("r = " + r.Data);
                 }
                 else
                 {
                     r = null;
+                    Console.WriteLine("r = null");
                 }
 
                 /*
-                 * Alright, now that we've got our variables set, it's time to go over cases.
-                 * Since there are so many, we're going to explain them as we cover them,
+                 * Alright, now that we've got our variables set, 
+                 * it's time to go over cases.
+                 * Since there are so many, 
+                 * we're going to explain them as we cover them,
                  * as opposed to looking through them all now. 
                  */
 
                 /*
                  * Simple Case: either u or v is red.
                  * In this case, we can simply mark the replaced child as black.
-                 * Since only one of them can have been red, this will maintain black height.
+                 * Since only one of them can have been red, 
+                 * this will maintain black height.
                  * So, we simply remove v as normal, then recolor u to be black.
                  */
-                if (u.Color == NodeColor.RED || v.Color == NodeColor.RED)
+                if (u != null && u.Color == NodeColor.RED || v != null && v.Color == NodeColor.RED)
                 {
-                    Remove(v);
-                    u.Color = NodeColor.RED;
+                    Remove(v, v, true);
+
+                    if (u != null)
+                    {
+                        u.Color = NodeColor.RED;
+                    }
                 }
                 /*
                  * Second Case: both u and v are black.
                  * Here, we begin our encounter with double black nodes.
-                 * The double black color is a tool used to help us balance after removal.
+                 * The double black color is a tool 
+                 * used to help us balance after removal.
                  * Often times, our double black node will be null,
                  * in which case, we can simply perform the appropriate operations,
-                 * as we will know that there is a theoretical "double black null" leaf there.
+                 * as we will know that there is a 
+                 * theoretical "double black null" leaf there.
                  * 
-                 * The only real rule to remember with double black nodes, is that they cannot exist,
-                 * so we make them simply to remove them.
+                 * The only real rule to remember with double black nodes, 
+                 * is that they cannot exist,
+                 * so we create them simply to remove them.
                  */
-                else if (u.Color == NodeColor.BLACK && v.Color == NodeColor.BLACK)
+                else if (u == null || u.Color == NodeColor.BLACK && v == null || v.Color == NodeColor.BLACK)
                 {
+                    //We have essentially every other scenario inside of this one, 
+                    //so this will be long.
+
+                    /*
+                     * Case 3: Do the following when 
+                     * the current node u is double black,
+                     * or is not root
+                     */
+
+                    /*
+                     * Case 3a: If sibling s is black
+                     * and at least one of sibling's children r is red
+                     * 
+                     * This case is much easier to deal with than most,
+                     * as it is very similar to the addition restructuring.
+                     * We have a Right, left, rightleft, and leftright case in 3a.
+                     * However, in removal we focus on the orientation of s and r.
+                     * Left Left = s and r are both left children
+                     * Right Right = s and r are both right children
+                     * Left Right = s is a left child, r is a right child
+                     * Right Left = s is a right child, r is a left child
+                     */
+
+                    //TODO: Handle root (can this happen?)
+                    int sComp = s.Data.CompareTo(p.Data);
+                    Console.WriteLine(sComp == 1 ? "s is right child" : "s is left child");
+                    int rComp = r.Data.CompareTo(s.Data);
+                    Console.WriteLine(rComp == 1 ? "r is right child" : "r is left child");
+
+                    if (sComp == 1 && rComp == 1)
+                    {
+                        //Right Right
+                        //TODO: Document This
+                        Console.WriteLine("3a Right Right v = " + v.Data);
+                        Remove(v, v, true);
+                        Right(s);
+                        s.Color = NodeColor.BLACK;
+                        r.Color = NodeColor.BLACK;
+                    }
+                    else if (sComp == -1 && rComp == -1)
+                    {
+                        //Left Left
+                        //TODO - Document This
+                        Console.WriteLine("3a Left Left v = " + v.Data);
+                        Remove(v, v, true);
+                        Left(s);
+                        s.Color = NodeColor.BLACK;
+                        r.Color = NodeColor.BLACK;
+                    }
+                    else if (sComp == 1 && rComp == -1)
+                    {
+                        //Right Left
+                        Console.WriteLine("3a Right Left v = " + v.Data);
+                        Remove(v, v, true);
+                        Left(r);
+                        Right(r);
+                        s.Color = NodeColor.BLACK;
+                        r.Color = NodeColor.BLACK;
+                    }
+                    else if (sComp == -1 && rComp == 1)
+                    {
+                        //Left Right
+                        Console.WriteLine("3a Left Right v = " + v.Data);
+                        Remove(v, v, true);
+                        Right(r);
+                        Left(r);
+                        s.Color = NodeColor.BLACK;
+                        r.Color = NodeColor.BLACK;
+                    }
+                    else
+                    {
+                        Console.WriteLine("This shouldn't ever happen!");
+                    }
+
+
+                    /*
+                     * Case 3b: If sibling s is black
+                     * and both of sibling's children are black
+                     * 
+                     * This case is relatively simple, but does involve somce recursion.
+                     * In this scenario, u, v, s, and r are all black.
+                     * p can also be black, but is not necesarily.
+                     * 
+                     * We don't have any actual representation of a double black node,
+                     * but in this case we must act as though we do, and continously
+                     * recurse up the tree until we can resolve it.
+                     * 
+                     * This is effectively what we're dealing with:
+                     *  
+                     *     p
+                     *    / \
+                     *   u   s
+                     * 
+                     */
 
                 }
-
 
 
 
@@ -925,7 +1064,8 @@ namespace RedBlackTree
         /// <summary>
         /// Finds the minimum node from a given node
         /// </summary>
-        /// <param name="currNode">Node to find minimum from. Should generally be a right child</param>
+        /// <param name="currNode">Node to find minimum from. 
+        /// Should generally be a right child</param>
         /// <returns>RBTNode representing the lowest child of given node</returns>
         private RBTNode<TData> MinNode(RBTNode<TData> currNode)
         {
@@ -935,7 +1075,8 @@ namespace RedBlackTree
         /// <summary>
         /// Finds the maximum node from a given node
         /// </summary>
-        /// <param name="currNode">Node to find maximum from. Should generally be a left child</param>
+        /// <param name="currNode">Node to find maximum from. 
+        /// Should generally be a left child</param>
         /// <returns>RBTNode representing the lowest child of given node</returns>
         private RBTNode<TData> MaxNode(RBTNode<TData> currNode)
         {
