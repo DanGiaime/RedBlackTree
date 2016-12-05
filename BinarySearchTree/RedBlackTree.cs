@@ -399,13 +399,12 @@ namespace RedBlackTree
                 }
             }
 
-            //Checks that the nodes are of different colors. If they are, changes the color of each.
-            //This works beacuse we only have two colors, so if they do not match, we can just convert each to the opposite color and be correct.
-            //Otherwise, does nothing
+            //Checks that the nodes are of different colors. If they are, swap the color of each.
             if (parentOfAddition.Color != parentOfAddition.LeftChild.Color)
             {
-                parentOfAddition.Color = (NodeColor)(((int)parentOfAddition.Color + 1) % 2);                    //Reverses the color of C
-                parentOfAddition.LeftChild.Color = (NodeColor)(((int)parentOfAddition.Color + 1) % 2);          //Reverses the color of a
+                NodeColor temp = parentOfAddition.Color;
+                parentOfAddition.Color = parentOfAddition.LeftChild.Color;                    //swaps the color of C
+                parentOfAddition.LeftChild.Color = temp;          //swaps the color of a
             }
 
         }
@@ -475,12 +474,11 @@ namespace RedBlackTree
                 }
             }
             //Checks that the nodes are of different colors. If they are, changes the color of each.
-            //This works beacuse we only have two colors, so if they do not match, we can just convert each to the opposite color and be correct.
-            //Otherwise, does nothing
             if (parentOfAddition.Color != parentOfAddition.RightChild.Color)
             {
-                parentOfAddition.Color = (NodeColor)(((int)parentOfAddition.Color + 1) % 2);                    //Reverses the color of C
-                parentOfAddition.RightChild.Color = (NodeColor)(((int)parentOfAddition.Color + 1) % 2);          //Reverses the color of a
+                NodeColor temp = parentOfAddition.Color;
+                parentOfAddition.Color = parentOfAddition.RightChild.Color;                    //swaps the color of C
+                parentOfAddition.RightChild.Color = temp;          //swaps the color of a
             }
 
         }
@@ -511,7 +509,9 @@ namespace RedBlackTree
         /// <param name="nodeToRemove">Node to be temoved from tree</param>
         /// <param name="currNode">Current node in traversal</param>
         /// <returns></returns>
-        public bool Remove(RBTNode<TData> nodeToRemove, RBTNode<TData> currNode = null, bool lastCall = false)
+        public bool Remove(RBTNode<TData> nodeToRemove,
+            RBTNode<TData> currNode = null,
+            bool lastCall = false)
         {
 
             if (currNode == null)
@@ -880,7 +880,7 @@ namespace RedBlackTree
                 }
                 else
                 {
-                    //otherwise, v's sibling is the right chil!
+                    //otherwise, v's sibling is the right child!
                     s = p.RightChild;
                 }
                 Console.WriteLine("s = " + s.Data);
@@ -920,13 +920,14 @@ namespace RedBlackTree
                  */
 
                 /*
-                 * Simple Case: either u or v is red.
-                 * In this case, we can simply mark the replaced child as black.
-                 * Since only one of them can have been red, 
-                 * this will maintain black height.
-                 * So, we simply remove v as normal, then recolor u to be black.
-                 */
-                if (u != null && u.Color == NodeColor.RED || v != null && v.Color == NodeColor.RED)
+                * Simple Case: either u or v is red.
+                * In this case, we can simply mark the replaced child as black.
+                * Since only one of them can have been red, 
+                * this will maintain black height.
+                * So, we simply remove v as normal, then recolor u to be black.
+                */
+                if (u != null && u.Color == NodeColor.RED ||
+                    v != null && v.Color == NodeColor.RED)
                 {
                     Remove(v, v, true);
 
@@ -935,120 +936,48 @@ namespace RedBlackTree
                         u.Color = NodeColor.RED;
                     }
                 }
-                /*
-                 * Second Case: both u and v are black.
-                 * Here, we begin our encounter with double black nodes.
-                 * The double black color is a tool 
-                 * used to help us balance after removal.
-                 * Often times, our double black node will be null,
-                 * in which case, we can simply perform the appropriate operations,
-                 * as we will know that there is a 
-                 * theoretical "double black null" leaf there.
-                 * 
-                 * The only real rule to remember with double black nodes, 
-                 * is that they cannot exist,
-                 * so we create them simply to remove them.
-                 */
-                else if (u == null || u.Color == NodeColor.BLACK && v == null || v.Color == NodeColor.BLACK)
+                else
                 {
-                    //We have essentially every other scenario inside of this one, 
-                    //so this will be long.
-
                     /*
-                     * Case 3: Do the following when 
-                     * the current node u is double black,
-                     * or is not root
-                     */
-
-                    /*
-                     * Case 3a: If sibling s is black
-                     * and at least one of sibling's children r is red
-                     * 
-                     * This case is much easier to deal with than most,
-                     * as it is very similar to the addition restructuring.
-                     * We have a Right, left, rightleft, and leftright case in 3a.
-                     * However, in removal we focus on the orientation of s and r.
-                     * Left Left = s and r are both left children
-                     * Right Right = s and r are both right children
-                     * Left Right = s is a left child, r is a right child
-                     * Right Left = s is a right child, r is a left child
-                     */
-
-                    //TODO: Handle root (can this happen?)
-                    int sComp = s.Data.CompareTo(p.Data);
-                    Console.WriteLine(sComp == 1 ? "s is right child" : "s is left child");
-                    int rComp = r.Data.CompareTo(s.Data);
-                    Console.WriteLine(rComp == 1 ? "r is right child" : "r is left child");
-
-                    if (sComp == 1 && rComp == 1)
+                    * Second Case: both u and v are black.
+                    * Here, we begin our encounter with double black nodes.
+                    * The double black color is a tool 
+                    * used to help us balance after removal.
+                    * 
+                    * The only real rule to remember with double black nodes, 
+                    * is that they cannot exist,
+                    * so we create them simply to remove them.
+                    * 
+                    * When u and v are black, removing v will color u double black
+                    * If there is no u, we create a null node where u would be and
+                    * color it double black.
+                    * 
+                    */
+                    int vComp = v.Data.CompareTo(p.Data);
+                    Remove(v, v, true);
+                    if (u == null)
                     {
-                        //Right Right
-                        //TODO: Document This
-                        Console.WriteLine("3a Right Right v = " + v.Data);
-                        Remove(v, v, true);
-                        Right(s);
-                        s.Color = NodeColor.BLACK;
-                        r.Color = NodeColor.BLACK;
-                    }
-                    else if (sComp == -1 && rComp == -1)
-                    {
-                        //Left Left
-                        //TODO - Document This
-                        Console.WriteLine("3a Left Left v = " + v.Data);
-                        Remove(v, v, true);
-                        Left(s);
-                        s.Color = NodeColor.BLACK;
-                        r.Color = NodeColor.BLACK;
-                    }
-                    else if (sComp == 1 && rComp == -1)
-                    {
-                        //Right Left
-                        Console.WriteLine("3a Right Left v = " + v.Data);
-                        Remove(v, v, true);
-                        Left(r);
-                        Right(r);
-                        s.Color = NodeColor.BLACK;
-                        r.Color = NodeColor.BLACK;
-                    }
-                    else if (sComp == -1 && rComp == 1)
-                    {
-                        //Left Right
-                        Console.WriteLine("3a Left Right v = " + v.Data);
-                        Remove(v, v, true);
-                        Right(r);
-                        Left(r);
-                        s.Color = NodeColor.BLACK;
-                        r.Color = NodeColor.BLACK;
+                        if (vComp == 1)
+                        {
+                            u = new RBTNode<TData>(p.Data, null, null, NodeColor.DBLBLACK);
+                            p.RightChild = u;
+                            u.Parent = p;
+                        }
+                        else
+                        {
+                            u = new RBTNode<TData>(p.Data, null, null, NodeColor.DBLBLACK);
+                            p.LeftChild = u;
+                            u.Parent = p;
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("This shouldn't ever happen!");
+                        u.Color = NodeColor.DBLBLACK;
                     }
-
-
-                    /*
-                     * Case 3b: If sibling s is black
-                     * and both of sibling's children are black
-                     * 
-                     * This case is relatively simple, but does involve somce recursion.
-                     * In this scenario, u, v, s, and r are all black.
-                     * p can also be black, but is not necesarily.
-                     * 
-                     * We don't have any actual representation of a double black node,
-                     * but in this case we must act as though we do, and continously
-                     * recurse up the tree until we can resolve it.
-                     * 
-                     * This is effectively what we're dealing with:
-                     *  
-                     *     p
-                     *    / \
-                     *   u   s
-                     * 
-                     */
-
                 }
 
-
+                //Begin rebalancing
+                RebalanceDoubleBlack(u, p, s, r);
 
             }
             else
@@ -1061,6 +990,151 @@ namespace RedBlackTree
             //if (v == root) { root = null; }
         }
 
+        private bool RebalanceDoubleBlack(RBTNode<TData> u,
+            RBTNode<TData> p,
+            RBTNode<TData> s,
+            RBTNode<TData> r)
+        {
+            //We have essentially every other scenario inside of this one, 
+            //so this will be long.
+
+            /*
+             * Case 3: Do the following when 
+             * the current node u is double black,
+             * or is not root
+             */
+
+            //TODO: Handle root (can this happen?)
+            int sComp = s.Data.CompareTo(p.Data);
+            Console.WriteLine(sComp == 1 ? "s is right child" : "s is left child");
+            int rComp = r.Data.CompareTo(s.Data);
+            Console.WriteLine(rComp == 1 ? "r is right child" : "r is left child");
+
+            /*
+             * Case 3a: If sibling s is black
+             * and at least one of sibling's children r is red
+             * 
+             * This case is much easier to deal with than most,
+             * as it is very similar to the addition restructuring.
+             * We have a Right, left, rightleft, and leftright case in 3a.
+             * However, in removal we focus on the orientation of s and r.
+             * Left Left = s and r are both left children
+             * Right Right = s and r are both right children
+             * Left Right = s is a left child, r is a right child
+             * Right Left = s is a right child, r is a left child
+             */
+
+
+            if ((s == null || s.Color == NodeColor.BLACK) && r != null)
+            {
+                if (sComp == 1 && rComp == 1)
+                {
+                    //Right Right
+                    //TODO: Document This
+                    Console.WriteLine("3a Right Right");
+                    Right(s);
+                    s.Color = NodeColor.BLACK;
+                    r.Color = NodeColor.BLACK;
+                }
+                else if (sComp == -1 && rComp == -1)
+                {
+                    //Left Left
+                    //TODO - Document This
+                    Console.WriteLine("3a Left Left");
+                    Left(s);
+                    s.Color = NodeColor.BLACK;
+                    r.Color = NodeColor.BLACK;
+                }
+                else if (sComp == 1 && rComp == -1)
+                {
+                    //Right Left
+                    Console.WriteLine("3a Right Left");
+                    Left(r);
+                    Right(r);
+                    s.Color = NodeColor.BLACK;
+                    r.Color = NodeColor.BLACK;
+                }
+                else if (sComp == -1 && rComp == 1)
+                {
+                    //Left Right
+                    Console.WriteLine("3a Left Right");
+                    Right(r);
+                    Left(r);
+                    s.Color = NodeColor.BLACK;
+                    r.Color = NodeColor.BLACK;
+                }
+                else
+                {
+                    Console.WriteLine("This shouldn't ever happen!");
+                }
+            }
+
+            /*
+             * Case 3b: If sibling s is black
+             * and both of sibling's children are black
+             * 
+             * This case is relatively simple, but does involve somce recursion.
+             * In this scenario, u, v, s, and r are all black.
+             * p can also be black, but is not necesarily.
+             * 
+             * We don't have any actual representation of a double black node,
+             * but in this case we must act as though we do, and continously
+             * recurse up the tree until we can resolve it.
+             * 
+             * This is effectively what we're dealing with:
+             *  
+             *     p          p
+             *    / \   ->   / \
+             *   u   s      N   s
+             * 
+             * Where N is a double black null node.
+             * The way that this is resolved is by pushing the double black
+             * up the tree via recoloring until we can properly handle it.
+             * 
+             * When we cannot properly handle it,
+             * the recoloring method consists of the following:
+             * Set node N to Black
+             * Set node p to Dbl Black
+             * Set node s to Red
+             * 
+             * Every time we hit this scenario, we must perform this recoloring,
+             * Then move up the tree to see if a new solution has become viable.
+             * A new solution consists of anything that resolves a dbl black.
+             * 
+             * We can properly handle it when:
+             * The parent of the double black node is red, or
+             * The double black node is root.
+             * 
+             * When we can properly handle the dbl black:
+             * 
+             * If p is red, instead of recoloring do the following:
+             * Set node N to black
+             * Set node p to Black
+             * set node s to Red
+             * 
+             * Is node N is root, instead of recoloring do the following:
+             * Set node N to black
+             * 
+             */
+            else if (s != null && s.Color == NodeColor.BLACK && r == null)
+            {
+                //If it's red, color it black and we're done
+                if (p.Color == NodeColor.RED)
+                {
+                    p.Color = NodeColor.BLACK;
+                }
+                //If it isn't red, color it double black and try again
+                else
+                {
+                    p.Color = NodeColor.DBLBLACK;
+                    //TODO - Method to find u, p, s, r given double black node to save repetition
+                }
+                s.Color = NodeColor.RED;
+            }
+
+            Remove(u, u, true);
+            return true;
+        }
         /// <summary>
         /// Finds the minimum node from a given node
         /// </summary>

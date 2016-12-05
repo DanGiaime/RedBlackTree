@@ -8,7 +8,7 @@ namespace RedBlackTree
 {
     //This enumeration will improve the readability of this project, 
     //so instead of just a 0 or 1, we can say RED or BLACK
-    enum NodeColor { BLACK = 0, RED = 1}; 
+    enum NodeColor { BLACK = 0, RED = 1, DBLBLACK = 2}; 
 
     class RBTNode<TData> where TData : IComparable
     {
