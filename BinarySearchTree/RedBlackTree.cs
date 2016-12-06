@@ -618,7 +618,7 @@ namespace RedBlackTree
                     */
                     else
                     {
-                        Console.WriteLine("two children!");
+                        Console.WriteLine("two children! Getting min");
                         RBTNode<TData> F = MinNode(currNode.RightChild);
                         Console.WriteLine("Node to actually remove: " + F.Data);
                         if (F.RightChild != null)
@@ -631,9 +631,12 @@ namespace RedBlackTree
                         if (F.Parent != root)
                         {
                             F.Parent.LeftChild = F.RightChild;
-                            F.RightChild.Parent = F.Parent;
+                            if (F.RightChild != null)
+                            {
+                                F.RightChild.Parent = F.Parent;
+                            }
                         }
-                        Remove(F, F);
+                        RBTRemove(F);
 
                         F.Free();
                         return true;
@@ -782,14 +785,14 @@ namespace RedBlackTree
                     //so this becomes very simple.
                     else
                     {
-                        Console.WriteLine("Two kids!");
+                        Console.WriteLine("Two kids! Getting min");
                         RBTNode<TData> F = MinNode(currNode.RightChild);
                         Console.WriteLine("Node to actually remove: " + F.Data);
                         if (F.RightChild != null)
                         {
                             F.RightChild.Parent = F.Parent;
                         }
-                        F.Parent.LeftChild = F.RightChild;
+                        F.Parent.RightChild = F.RightChild;
                         currNode.Data = F.Data;
                         F.Free();
                         return true;
@@ -828,7 +831,7 @@ namespace RedBlackTree
              * will always have either one child or none, based on standard BST removal.
              */
 
-            Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>> 
+            Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>>
                 relativeNodes = FitToModel(v);
 
             RBTNode<TData> u = relativeNodes.Item1;
@@ -887,6 +890,7 @@ namespace RedBlackTree
                 RebalanceDoubleBlack(u, p, s, r);
             }
 
+
             return true;
             //if (v == root) { root = null; }
         }
@@ -906,11 +910,18 @@ namespace RedBlackTree
              */
 
             //TODO: Handle root (can this happen?)
-            int sComp = s.Data.CompareTo(p.Data);
-            Console.WriteLine(sComp == 1 ? "s is right child" : "s is left child");
-            int rComp = r.Data.CompareTo(s.Data);
-            Console.WriteLine(rComp == 1 ? "r is right child" : "r is left child");
-
+            int sComp=0;
+            int rComp=0;
+            if (s != null)
+            {
+                sComp = s.Data.CompareTo(p.Data);
+                Console.WriteLine(sComp == 1 ? "s is right child" : "s is left child");
+            }
+            if (r != null)
+            {
+                rComp = r.Data.CompareTo(s.Data);
+                Console.WriteLine(rComp == 1 ? "r is right child" : "r is left child");
+            }
             /*
              * Case 3a: If sibling s is black
              * and at least one of sibling's children r is red
@@ -928,14 +939,13 @@ namespace RedBlackTree
 
             if ((s == null || s.Color == NodeColor.BLACK) && r != null)
             {
+                //TODO - Acknowledge color weirdness here
                 if (sComp == 1 && rComp == 1)
                 {
                     //Right Right
                     //TODO: Document This
                     Console.WriteLine("3a Right Right");
                     Right(s);
-                    s.Color = NodeColor.BLACK;
-                    r.Color = NodeColor.BLACK;
                 }
                 else if (sComp == -1 && rComp == -1)
                 {
@@ -943,8 +953,6 @@ namespace RedBlackTree
                     //TODO - Document This
                     Console.WriteLine("3a Left Left");
                     Left(s);
-                    s.Color = NodeColor.BLACK;
-                    r.Color = NodeColor.BLACK;
                 }
                 else if (sComp == 1 && rComp == -1)
                 {
@@ -952,8 +960,6 @@ namespace RedBlackTree
                     Console.WriteLine("3a Right Left");
                     Left(r);
                     Right(r);
-                    s.Color = NodeColor.BLACK;
-                    r.Color = NodeColor.BLACK;
                 }
                 else if (sComp == -1 && rComp == 1)
                 {
@@ -961,13 +967,17 @@ namespace RedBlackTree
                     Console.WriteLine("3a Left Right");
                     Right(r);
                     Left(r);
-                    s.Color = NodeColor.BLACK;
-                    r.Color = NodeColor.BLACK;
                 }
                 else
                 {
                     Console.WriteLine("This shouldn't ever happen!");
                 }
+
+                //This happens in all cases
+
+                p.Color = NodeColor.BLACK;
+                s.Color = NodeColor.RED;
+                r.Color = NodeColor.BLACK;
             }
 
             /*
@@ -1019,6 +1029,7 @@ namespace RedBlackTree
              */
             else if (s != null && s.Color == NodeColor.BLACK && r == null)
             {
+                Console.WriteLine("Case 3b");
                 //If it's red, color it black and we're done
                 if (p.Color == NodeColor.RED)
                 {
@@ -1029,19 +1040,106 @@ namespace RedBlackTree
                 {
                     p.Color = NodeColor.DBLBLACK;
                     //Get model using this node as the double black
-                    Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>> 
+                    Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>>
                         relativeNodes = FitToModel(p);
-                    RebalanceDoubleBlack(relativeNodes.Item1, 
-                        relativeNodes.Item2, 
+                    RebalanceDoubleBlack(relativeNodes.Item1,
+                        relativeNodes.Item2,
                         relativeNodes.Item3,
                         relativeNodes.Item4);
 
                 }
                 s.Color = NodeColor.RED;
             }
+            /*
+             * Case 3c: Sibling is red.
+             * In this case, we perform a rotation to move the sibling up.
+             * We then recolor the old sibling and parent.
+             * 
+             * 
+             *    P           P             S             S
+             *   / \         / \           / \    (3b)   / \
+             *  V   s   ->  N   s    ->   p   R    ->   P   R
+             *     / \         / \       / \           / \
+             *    c   r       c   r     N   c         n   c
+             * 
+             * Where c is the left red child of s, 
+             * N is a double black null leaf,
+             * and n is a black null leaf
+             *    
+             * To achieve this, we will take the following steps:
+             * 
+             * First, remove node V as always. (This has already happened by this time)
+             * Second, perform a rotation on s.
+             *  If s is a left child, perform a left rotation.
+             *  If s is a right child, perform a right rotation.
+             * Finally, we have reshaped our scenario into a solvable case 3b,
+             * so we simply call RebalanceDoubleBlack again with an adjusted model.
+             * 
+             * Instead of calling the method with (u, p, s, r) as we normally would,
+             * we will call it relative to N after we reshape to match 3b.
+             * 
+             * So, in this case we will manually remake our model, 
+             * since altering FitToModel and such would require 
+             * refactoring the entire architecture of the program.
+             * 
+             * In our new model, we want to rebalance based on N,
+             * so p will be p (as p is the parent of N),
+             * s will be c (as c is the sibling of n),
+             * and r will be the appropriate child of c
+             * 
+             * However, since we are guaranteed to have a solvable 3b, 
+             * we don't actually need to find r,
+             * so we'll just call it null
+             * 
+             */
+
+            else if (s != null && s.Color == NodeColor.RED)
+            {
+                Console.WriteLine("Case 3c");
+                //V has already been removed, so go to step 2
+                //Rotate c appropriately
+
+                //If c is a right child...
+                if (p.RightChild != null)
+                {
+                    Right(p.RightChild);
+
+                    //Finally, recall with adjusted model
+                    RebalanceDoubleBlack(u, p, p.RightChild, null);
+                }
+                //Otherwise, c is a left child...
+                else
+                {
+                    Left(p.LeftChild);
+
+                    //Finally, recall with adjusted model
+                    RebalanceDoubleBlack(u, p, p.LeftChild, null);
+                }
+
+            }
+
+            /*
+             * Case 4: if root is double black, color it black
+             * 
+             * This works because every single node will have it's black height
+             * decreased by 1, so the entire tree will still be valid.
+             */
+            else if (p == null)
+            {
+                root.Color = NodeColor.BLACK;
+            }
+            else
+            {
+                Console.WriteLine("Let's hope this never happens");
+            }
             return true;
         }
 
+        /// <summary>
+        /// Gives a tuple in form (u, p, s, r) of nodes relative to given v
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         private Tuple<RBTNode<TData>, RBTNode<TData>, RBTNode<TData>, RBTNode<TData>>
             FitToModel(RBTNode<TData> v)
         {
@@ -1141,6 +1239,7 @@ namespace RedBlackTree
                 s,
                 r);
         }
+
         /// <summary>
         /// Finds the minimum node from a given node
         /// </summary>

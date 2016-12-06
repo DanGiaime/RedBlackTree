@@ -63,7 +63,7 @@ namespace RedBlackTree
 
         override public String ToString()
         {
-            return leftChild + " " + data.ToString() + " " + rightChild;
+            return leftChild + " " + data.ToString() + Color + " " + rightChild;
         }
 
         public NodeColor Color {
