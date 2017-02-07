@@ -530,8 +530,9 @@ namespace RedBlackTree
          * in which we will perform this shift
          * 
          * Set d's left child to c
-         * TODO: finish this doc.
-         * 
+         * Set c's parent to d
+         * Set B's right child to d
+         * Set d's parent to b
          */
         private void Left(RBTNode<TData> parentOfAddition)
         {
@@ -1076,7 +1077,6 @@ namespace RedBlackTree
              * or is not root
              */
 
-            //TODO: Handle root (can this happen?)
             int sComp=0;
             int rComp=0;
             if (s != null)
@@ -1108,32 +1108,49 @@ namespace RedBlackTree
 
             if ((s == null || s.Color == NodeColor.BLACK) && r != null)
             {
-                //TODO - Acknowledge color weirdness here
                 if (sComp == 1 && rComp == 1)
                 {
                     //Right Right
-                    //TODO: Document This
+                    //If s and r are both right children,
+                    //we preform a right rotation.
+                    //Check the Right() documentation for details
                     Console.WriteLine("3a Right Right");
                     Right(s);
                 }
                 else if (sComp == -1 && rComp == -1)
                 {
                     //Left Left
-                    //TODO - Document This
+                    //If s and r are both left children,
+                    //we preform a left rotation.
+                    //Check the Right() documentation for details
                     Console.WriteLine("3a Left Left");
                     Left(s);
                 }
                 else if (sComp == 1 && rComp == -1)
                 {
-                    //Right Left
+                    /*Right Left
+                     *If s is a right child
+                     *and r is a left child
+                     *We preform a "rightleft" rotation
+                     *(This actually consists of one call to right, one to left)
+                     *We call in the order of Left() then Right()
+                     *since we start from the bottom and work our way up.
+                     *Check the Right() and Left() documentations for details*/
                     Console.WriteLine("3a Right Left");
                     Left(r);
                     Right(r);
                 }
                 else if (sComp == -1 && rComp == 1)
                 {
-                    //Left Right
-                    Console.WriteLine("3a Left Right");
+                    /*Left Right
+                     *If s is a left child
+                     *and r is a right child
+                     *We preform a "leftright" rotation
+                     *(This actually consists of one call to left, one to right)
+                     *We call in the order of Right() then Left()
+                     *since we start from the bottom and work our way up.
+                     *Check the Right() and Left() documentations for details */
+                     Console.WriteLine("3a Left Right");
                     Right(r);
                     Left(r);
                 }
@@ -1143,7 +1160,7 @@ namespace RedBlackTree
                 }
 
                 //This happens in all cases
-
+                //It's a bit weird, but this ensures that the tree stays valid.
                 p.Color = NodeColor.BLACK;
                 s.Color = NodeColor.RED;
                 r.Color = NodeColor.BLACK;
