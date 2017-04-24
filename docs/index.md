@@ -31,7 +31,16 @@ Here I will attempt to describe the Red-Black Tree, and its strategies for handl
 A Red-Black Tree aims to combat the problem of imbalance using two main tools: colors and rotations.
 
 #### Coloring
-The difference between a node in a Binary Search Tree and a node in a Red-Black Tree is that a node in a Red-Black Tree has an associated color.
+The difference between a node in a Binary Search Tree and a node in a Red-Black Tree is that a node in a Red-Black Tree has an associated color. This color is, as you might guess, either red or black.
+
+The rules for colors are as follows:
+1. Every node is either red or black
+2. Every leaf (NULL) is black
+3. If a node is red, then both its children are black
+4. Every simple path from a node to a descendent leaf contains the same number of black nodes.
+
+So what do those mean in English? Well, the first rule is pretty straightforward. Each node will have a color value, and that value will only ever be red or black.
+
 
 ## Insertion
 ## Deletion
