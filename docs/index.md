@@ -30,7 +30,6 @@ Here I will attempt to describe the Red-Black Tree, and its strategies for handl
 ## Red-Black Tree (Basic Overview)
 A Red-Black Tree aims to combat the problem of imbalance using two main tools: colors and rotations.
 
-#### Coloring
 The difference between a node in a Binary Search Tree and a node in a Red-Black Tree is that a node in a Red-Black Tree has an associated color. This color is, as you might guess, either red or black.
 
 The rules for colors are as follows:
@@ -41,6 +40,13 @@ The rules for colors are as follows:
 
 So what do those mean in English? Well, the first rule is pretty straightforward. Each node will have a color value, and that value will only ever be red or black.
 
+The second rule is a bit odd. In a Red-Black Tree, every node is understood to have two children at all times. If a node has two actual children, that's great! If a node has anything less than that, its missing children will be filled in by black "NULL" nodes. So, although these nodes may not actually "exist" in the tree, they are understood to be there. The actual existence/nonexistence is an implementation detail. In my implementation, I chose not to have any literal existence of these nodes; Simply null values for children that were treated as black when balancing. It may seem odd that we have such a rule, but when we view the balancing strategies later on, this will make more sense.
+
+The third rule is probably the most important in terms of insertion. Every red node is guaranteed to have two black children at all times. Since every node enters the tree red, this causes a rebalance every time a node is inserted below a red node. How this rebalance takes place will be covered later.
+
+The fourth rule speaks towards a concept known as "Black Height". "Black Height" is essentially the number of Black Nodes from any given node to the bottom of the tree (any NULL leaf node). In order for the tree to be valid, "Black Height" must be equal for every path from a given node.  Different nodes may have different black heights, but a given node can have exactly one black height shared by every path from that node to any (NULL) leaf node.
+
+All of these rules will seem much more reasonable in the next sections, when we see how they're used to make rebalancing decisions. 
 
 ## Insertion
 ## Deletion
