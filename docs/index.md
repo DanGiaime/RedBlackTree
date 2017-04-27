@@ -46,7 +46,99 @@ The third rule is probably the most important in terms of insertion. Every red n
 
 The fourth rule speaks towards a concept known as "Black Height". "Black Height" is essentially the number of Black Nodes from any given node to the bottom of the tree (any NULL leaf node). In order for the tree to be valid, "Black Height" must be equal for every path from a given node.  Different nodes may have different black heights, but a given node can have exactly one black height shared by every path from that node to any (NULL) leaf node.
 
-All of these rules will seem much more reasonable in the next sections, when we see how they're used to make rebalancing decisions. 
+All of these rules will seem much more reasonable in the next sections, when we see how they're used to make rebalancing decisions.
 
 ## Insertion
+
+Insertion in a Red-Black Tree can be compared to insertion in a BST (Binary Search Tree) combined with insertion into a Heap.
+
+RBT (Red-Black Tree) insertion begins with a [Standard BST Insertion](http://quiz.geeksforgeeks.org/binary-search-tree-set-1-search-and-insertion/). In essence, we traverse the tree to find where our Node fits in (based solely on the value of the data in the node), then place the Node there.
+
+RBT insertion continues with a method similar to that of ["Heapify" or "Sift"](http://www.cs.yale.edu/homes/aspnes/pinewiki/Heaps.html) (check the "Bottom-up heapification" section). After a standard BST insertion, a RBT will run a "Rebalance-Insert" method on the tree. This method attempt to, as it says, rebalance the tree after an insert. Sometimes, nothing needs to be done, but other times rules are broken, and steps must be taken to reclaim the correct RBT structure.
+
+These steps consist of 4 main rotations, or a recoloring. Left, Right, LeftRight, and RightLeft. Each of these methods describes the rotation(s) it will preform based on the arrangement and colors of the node we have inserted, that node's parent, sibling, and possible nephews. Similarly, in specific cases, we will recolor based on this same arrangement and coloring in order to maintain a valid structure.
+
+First, we will cover a Right Rotation, as is described in the comments of my implementation.
+
+__A right rotation occurs when we have two red nodes that are right children of their respective parents.__
+
+    In this example, capital letters are RED nodes, lowercase are black nodes
+
+             a                    c
+              \                  / \
+               C      -->       A   D
+              / \                \
+             b   D                b
+     Where D is the most recently added node
+
+     The key to understanding rotations is understanding that a rotation consists of exactly three things:
+     1) Two nodes shift position
+     2) Those same two nodes swap colors
+     3) The child of one node becomes the child of the other
+
+     So, in this scenario, a and C change in the right rotation, the grandparent of the added node the left child of the parent of the added. So, a becomes C's left child. Since there two nodes have shifted positions, they will swap their colors.
+     Since we previously had a and C, we now have A and c.
+
+     ***IMPORTANT NOTE ABOUT COLOR SWAP:***
+     When two nodes switch colors, they will NOT ALWAYS BE DIFFERENT. We will see this later when we get to the "rightleft" and "leftright" scenarios. As such, if two nodes are red and change positions, the two nodes will "swap colors" from red to red.
+
+     Since c now has A as it's left child, c's previous left child, b, must be appended to A. Since b must be greater than A, we append b as A's right child
+
+     ***IMPORTANT NOTE ABOUT CHILD SHIFT:***
+     Only one child of each moved node should change.
+     In this scenario, A would maintain any previous left children,
+     and c would maintain any previous right children
+
+__The Left rotation scenario is simply the inverse of the Right rotation. The Left rotation scenario occurs when we have two red nodes that are left children of their respective parents.__
+
+    As such, not much explanation beyond the previous is necessary, only that a few rights and lefts will swap. However, for the sake of absolute clarity, let's go through it anyway.
+
+    In this example, capital letters are RED nodes, lowercase are BLACK nodes.
+            d                b
+           /                / \
+          B      -->       A   D
+         / \                  /
+        A   c                c
+
+__The rightleft rotation scenario occurs when we have two red nodes that are right and left children of their parents, respectively.__
+
+    Ok, so what is rightleft()?
+    It's not actually a method in our case, but is a concept.
+    In order to resolve the following scenario, two consecutive rotations are needed.
+
+         a                 a                    b
+          \                 \                  / \
+           C      -->        B        -->     A   C
+          /                   \
+         B                     C
+
+    This is obviously a very basic form,
+    as I have not included any
+    theoretical children, but those are not
+    necessarry for understanding this scenario.
+    In order to handle this situation,
+    we must preform a Left() rotation from B,
+    then a Right() rotation from B.
+
+    Effectively, the goal of the first rotation is
+    to move the nodes so that they
+    match the right rotation scenario.
+    By placing B above C, we create a
+    Right() rotation scenario,
+    which we know how to handle.
+    So, by performing a Left() rotation from B,
+    we will create that scenario.
+
+__The leftright rotation is simply the inverse of the rightleft rotation. The leftright rotation scenario occurs when we have two red nodes that are left and right children of their parents, respectively.__
+
+    As such, not much explanation beyond the previous is necessary, only that a few rights and lefts will swap. However, for the sake of absolute clarity, let's go through it anyway.
+
+    In this example, capital letters are RED nodes, lowercase are BLACK nodes.
+
+           a               a                b
+          /               /                / \
+         C      -->      B        -->     C   A
+          \             /
+           B           C
+
 ## Deletion
