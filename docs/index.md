@@ -71,18 +71,27 @@ __A right rotation occurs when we have two red nodes that are right children of 
              b   D                b
      Where D is the most recently added node
 
-     The key to understanding rotations is understanding that a rotation consists of exactly three things:
+     The key to understanding rotations is understanding that
+     a rotation consists of exactly three things:
      1) Two nodes shift position
      2) Those same two nodes swap colors
      3) The child of one node becomes the child of the other
 
-     So, in this scenario, a and C change in the right rotation, the grandparent of the added node the left child of the parent of the added. So, a becomes C's left child. Since there two nodes have shifted positions, they will swap their colors.
+     So, in this scenario, a and C change in the right rotation,
+     the grandparent of the added node the left child of the parent of the added.
+     So, a becomes C's left child.
+     Since there two nodes have shifted positions, they will swap their colors.
      Since we previously had a and C, we now have A and c.
 
      ***IMPORTANT NOTE ABOUT COLOR SWAP:***
-     When two nodes switch colors, they will NOT ALWAYS BE DIFFERENT. We will see this later when we get to the "rightleft" and "leftright" scenarios. As such, if two nodes are red and change positions, the two nodes will "swap colors" from red to red.
+     When two nodes switch colors, they will NOT ALWAYS BE DIFFERENT.
+     We will see this later when we get to the "rightleft" and "leftright" scenarios.
+     As such, if two nodes are red and change positions,
+     the two nodes will "swap colors" from red to red.
 
-     Since c now has A as it's left child, c's previous left child, b, must be appended to A. Since b must be greater than A, we append b as A's right child
+     Since c now has A as it's left child,
+     c's previous left child, b, must be appended to A.
+     Since b must be greater than A, we append b as A's right child
 
      ***IMPORTANT NOTE ABOUT CHILD SHIFT:***
      Only one child of each moved node should change.
@@ -90,7 +99,6 @@ __A right rotation occurs when we have two red nodes that are right children of 
      and c would maintain any previous right children
 
 __The Left rotation scenario is simply the inverse of the Right rotation. The Left rotation scenario occurs when we have two red nodes that are left children of their respective parents.__
-
     As such, not much explanation beyond the previous is necessary, only that a few rights and lefts will swap. However, for the sake of absolute clarity, let's go through it anyway.
 
     In this example, capital letters are RED nodes, lowercase are BLACK nodes.
@@ -100,11 +108,11 @@ __The Left rotation scenario is simply the inverse of the Right rotation. The Le
          / \                  /
         A   c                c
 
-__The rightleft rotation scenario occurs when we have two red nodes that are right and left children of their parents, respectively.__
+__The rightleft rotation scenario occurs when we have two red nodes that are right and left children of their parents, respectively__
 
-    Ok, so what is rightleft()?
-    It's not actually a method in our case, but is a concept.
-    In order to resolve the following scenario, two consecutive rotations are needed.
+Ok, so what is rightleft()?
+It's not actually a method in our case, but is a concept.
+In order to resolve the following scenario, two consecutive rotations are needed.
 
          a                 a                    b
           \                 \                  / \
@@ -129,15 +137,20 @@ __The rightleft rotation scenario occurs when we have two red nodes that are rig
     So, by performing a Left() rotation from B,
     we will create that scenario.
 
-__The leftright rotation is simply the inverse of the rightleft rotation. The leftright rotation scenario occurs when we have two red nodes that are left and right children of their parents, respectively.__
+__The leftright rotation is simply the inverse of the rightleft rotation. The leftright rotation scenario occurs when we have two red nodes that are left and right children of their parents, respectively__
 
-    As such, not much explanation beyond the previous is necessary, only that a few rights and lefts will swap. However, for the sake of absolute clarity, let's go through it anyway.
+    As such, not much explanation beyond the previous is necessary,
+    only that a few rights and lefts will swap.
+    However, for the sake of absolute clarity,
+    let's go through it anyway.
 
-    In this example, capital letters are RED nodes, lowercase are BLACK nodes.
+    In this example,
+    capital letters are RED nodes,
+    lowercase are BLACK nodes.
 
            a               a                b
           /               /                / \
-         C      -->      B        -->     C   A
+         C      -->      B        -->     A   C
           \             /
            B           C
 

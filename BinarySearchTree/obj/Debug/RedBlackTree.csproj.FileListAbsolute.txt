@@ -6,3 +6,9 @@ F:\College\myProjects\RedBlackTree\BinarySearchTree\obj\Debug\RedBlackTree.exe
 F:\College\myProjects\RedBlackTree\BinarySearchTree\obj\Debug\RedBlackTree.pdb
 Z:\IGMProfile\Documents\myProjects\RedBlackTree\BinarySearchTree\bin\Debug\RedBlackTree.exe.config
 C:\Users\dgiai\Source\Repos\RedBlackTree\BinarySearchTree\bin\Debug\RedBlackTree.exe.config
+C:\Users\Nick\Documents\Projects\RedBlackTree\BinarySearchTree\bin\Debug\RedBlackTree.exe.config
+C:\Users\Nick\Documents\Projects\RedBlackTree\BinarySearchTree\bin\Debug\RedBlackTree.exe
+C:\Users\Nick\Documents\Projects\RedBlackTree\BinarySearchTree\bin\Debug\RedBlackTree.pdb
+C:\Users\Nick\Documents\Projects\RedBlackTree\BinarySearchTree\obj\Debug\RedBlackTree.csprojResolveAssemblyReference.cache
+C:\Users\Nick\Documents\Projects\RedBlackTree\BinarySearchTree\obj\Debug\RedBlackTree.exe
+C:\Users\Nick\Documents\Projects\RedBlackTree\BinarySearchTree\obj\Debug\RedBlackTree.pdb

@@ -955,7 +955,9 @@ namespace RedBlackTree
                         {
                             F.RightChild.Parent = F.Parent;
                         }
+
                         F.Parent.RightChild = F.RightChild;
+                        F.Parent.LeftChild = null;
                         currNode.Data = F.Data;
                         F.Free();
                         return true;

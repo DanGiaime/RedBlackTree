@@ -72,6 +72,7 @@ namespace RedBlackTree
         }
 
         public void Free() {
+            Console.WriteLine("Freeing " + Data.ToString());
             Data = default(TData);
             leftChild = null;
             rightChild = null;
