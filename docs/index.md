@@ -69,6 +69,7 @@ __A right rotation occurs when we have two red nodes that are right children of 
                C      -->       A   D
               / \                \
              b   D                b
+
      Where D is the most recently added node
 
      The key to understanding rotations is understanding that
@@ -78,14 +79,16 @@ __A right rotation occurs when we have two red nodes that are right children of 
      3) The child of one node becomes the child of the other
 
      So, in this scenario, a and C change in the right rotation,
-     the grandparent of the added node the left child of the parent of the added.
+     the grandparent of the added node
+     becomes the left child of the parent of the added.
      So, a becomes C's left child.
      Since there two nodes have shifted positions, they will swap their colors.
      Since we previously had a and C, we now have A and c.
 
      ***IMPORTANT NOTE ABOUT COLOR SWAP:***
      When two nodes switch colors, they will NOT ALWAYS BE DIFFERENT.
-     We will see this later when we get to the "rightleft" and "leftright" scenarios.
+     We will see this later when we get to the
+     "rightleft" and "leftright" scenarios.
      As such, if two nodes are red and change positions,
      the two nodes will "swap colors" from red to red.
 
@@ -99,9 +102,13 @@ __A right rotation occurs when we have two red nodes that are right children of 
      and c would maintain any previous right children
 
 __The Left rotation scenario is simply the inverse of the Right rotation. The Left rotation scenario occurs when we have two red nodes that are left children of their respective parents.__
-    As such, not much explanation beyond the previous is necessary, only that a few rights and lefts will swap. However, for the sake of absolute clarity, let's go through it anyway.
 
-    In this example, capital letters are RED nodes, lowercase are BLACK nodes.
+  As such, not much explanation beyond the previous is necessary, only that a few rights and lefts will swap. However, for the sake of absolute clarity, let's go through it anyway.
+
+    In this example,
+    capital letters are RED nodes,
+    lowercase are BLACK nodes.
+
             d                b
            /                / \
           B      -->       A   D
@@ -139,14 +146,11 @@ In order to resolve the following scenario, two consecutive rotations are needed
 
 __The leftright rotation is simply the inverse of the rightleft rotation. The leftright rotation scenario occurs when we have two red nodes that are left and right children of their parents, respectively__
 
-    As such, not much explanation beyond the previous is necessary,
-    only that a few rights and lefts will swap.
-    However, for the sake of absolute clarity,
-    let's go through it anyway.
+  As such, not much explanation beyond the previous is necessary,
+  only that a few rights and lefts will swap.
+  However, for the sake of absolute clarity,
+  let's go through it anyway.
 
-    In this example,
-    capital letters are RED nodes,
-    lowercase are BLACK nodes.
 
            a               a                b
           /               /                / \
