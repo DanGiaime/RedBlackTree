@@ -7,7 +7,7 @@ from the intuition of self-balancing, to the various rotations and recolorings t
 
 A Red-Black Tree is what is known as a self-balancing Binary Search Tree. So, what is a self-balancing Binary Search Tree?
 
-Well, we already know what a Binary Search Tree is, right? A Binary Search Tree is a dta structure that holds data in a node-based, tree-like structure, where any given node has up to two children, with the left child being "less than" the parent, and the right child being "grater than" the parent. However, Binary Search Trees have an inherent flaw, known as imbalance.
+Well, we already know what a Binary Search Tree is, right? A Binary Search Tree is a data structure that holds data in a node-based, tree-like structure, where any given node has up to two children, with the left child being "less than" the parent, and the right child being "greater than" the parent. However, Binary Search Trees have an inherent flaw, known as imbalance.
 
 ##### What is Imbalance?
 Imbalance is what happens when data is lopsided, or the order in which data is put into a tree leads to a poor structure. For example, imagine you loaded the entire alphabet, A-Z, into a Binary Search Tree in order. You first load in A, which becomes the root. You then load in B, which becomes A's right child. You then load in C, which become's B's right child. You then load in D, which becomes C's right child. You continue this process, and when you've inserted Z, you realize that your tree isn't a tree at all, it's basically just a linked list!
@@ -158,4 +158,31 @@ __The leftright rotation is simply the inverse of the rightleft rotation. The le
           \             /
            B           C
 
+That covers the basic rotations. We can see where these occur upon insertion relatively easily, as in almost any scenario where we insert a Red node below another Red node, we're going to rotate. However, there exists one scenario that fits this description in which we will not rotate. This scenario is as follows, and is known as "Promotion".
+
+
 ## Deletion
+
+ Removal is a bit confusing.
+ Unlike insertion, which depends on
+ the uncle of the inserted node,
+ removal depends on the sibling of the node to be removed.
+ The following notation will be used the removal process:
+
+              p
+             / \
+            v   s
+           /     \
+          u       r
+
+     Where v is the node to remove,
+     u is the child of the (left or right) of v,
+     p is the parent of u,
+     s is the child of p this is not v,
+     r is the red child of s
+     (right or left, or right in the case of both).
+
+ Removal has many, many cases based on the color of these nodes.
+ The important thing to keep in mind is
+ that the node to be removed will always have either
+ one child or none, based on standard BST removal.
